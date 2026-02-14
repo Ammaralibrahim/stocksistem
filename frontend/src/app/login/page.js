@@ -27,7 +27,7 @@ export default function LoginPage() {
 
   const checkServerStatus = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/health')
+      const response = await fetch('https://ilajukback.vercel.app/api/health')
       if (response.ok) {
         const data = await response.json()
         setServerStatus({
@@ -44,7 +44,7 @@ export default function LoginPage() {
   const initializeAdmin = async () => {
     setInitializing(true)
     try {
-      const response = await fetch('http://localhost:5000/api/auth/init', {
+      const response = await fetch('https://ilajukback.vercel.app/api/auth/init', {
         method: 'GET'
       })
       
@@ -82,7 +82,7 @@ export default function LoginPage() {
         toast.error('لم يتم العثور على مستخدم المسؤول. جاري الإنشاء...')
         
         try {
-          const setupResponse = await fetch('http://localhost:5000/api/auth/setup', {
+          const setupResponse = await fetch('https://ilajukback.vercel.app/api/auth/setup', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
