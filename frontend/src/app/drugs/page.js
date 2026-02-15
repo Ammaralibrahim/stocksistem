@@ -86,7 +86,7 @@ export default function DrugsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white p-3 md:p-6" dir="rtl">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
+        {/* Header - mobilde butonlar tam genişlik */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>
             <h1 className="text-xl md:text-3xl font-bold text-gray-900">الأدوية</h1>
@@ -110,7 +110,7 @@ export default function DrugsPage() {
           </div>
         </div>
 
-        {/* Arama ve filtreler */}
+        {/* Arama ve filtreler - mobilde alt alta dizilir, taşma yapmaz */}
         <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-6 shadow-sm">
           <div className="flex flex-col md:flex-row gap-3">
             <div className="flex-1 relative">
@@ -160,7 +160,7 @@ export default function DrugsPage() {
           </div>
         </div>
 
-        {/* Tablo */}
+        {/* Tablo - sadece bu alan yatay kaydırılabilir, diğer her şey mobil ekrana sığar */}
         <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[800px] md:min-w-full">
@@ -176,12 +176,12 @@ export default function DrugsPage() {
                       className="w-5 h-5 rounded border-gray-300"
                     />
                   </th>
-                  <th className="text-right py-4 px-4 text-sm font-medium text-gray-500">الدواء</th>
-                  <th className="text-right py-4 px-4 text-sm font-medium text-gray-500">المخزون</th>
-                  <th className="text-right py-4 px-4 text-sm font-medium text-gray-500">السعر</th>
-                  <th className="text-right py-4 px-4 text-sm font-medium text-gray-500">تاريخ الانتهاء</th>
-                  <th className="text-right py-4 px-4 text-sm font-medium text-gray-500">الحالة</th>
-                  <th className="text-right py-4 px-4 text-sm font-medium text-gray-500">الإجراءات</th>
+                  <th className="text-right py-4 px-4 text-sm font-medium text-gray-500 whitespace-nowrap">الدواء</th>
+                  <th className="text-right py-4 px-4 text-sm font-medium text-gray-500 whitespace-nowrap">المخزون</th>
+                  <th className="text-right py-4 px-4 text-sm font-medium text-gray-500 whitespace-nowrap">السعر</th>
+                  <th className="text-right py-4 px-4 text-sm font-medium text-gray-500 whitespace-nowrap">تاريخ الانتهاء</th>
+                  <th className="text-right py-4 px-4 text-sm font-medium text-gray-500 whitespace-nowrap">الحالة</th>
+                  <th className="text-right py-4 px-4 text-sm font-medium text-gray-500 whitespace-nowrap">الإجراءات</th>
                 </tr>
               </thead>
               <tbody>
@@ -204,8 +204,8 @@ export default function DrugsPage() {
                         />
                       </td>
                       <td className="py-4 px-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-blue-100 flex items-center justify-center text-base md:text-lg">
+                        <div className="flex items-center gap-3 whitespace-nowrap">
+                          <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-blue-100 flex items-center justify-center text-base md:text-lg flex-shrink-0">
                             💊
                           </div>
                           <div>
@@ -214,40 +214,40 @@ export default function DrugsPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="py-4 px-4">
+                      <td className="py-4 px-4 whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           <span className={`w-2 h-2 rounded-full ${stock.dot}`}></span>
                           <span className="text-sm">{drug.stock} وحدة</span>
                         </div>
                       </td>
-                      <td className="py-4 px-4 font-bold text-sm">{drug.price} ر.س</td>
-                      <td className="py-4 px-4 text-sm">
+                      <td className="py-4 px-4 font-bold text-sm whitespace-nowrap">{drug.price} ر.س</td>
+                      <td className="py-4 px-4 text-sm whitespace-nowrap">
                         {drug.expiryDate ? format(new Date(drug.expiryDate), 'dd/MM/yyyy', { locale: ar }) : '-'}
                       </td>
-                      <td className="py-4 px-4">
+                      <td className="py-4 px-4 whitespace-nowrap">
                         <span className={`px-2 py-1 md:px-3 md:py-1 rounded-full text-xs font-medium ${stock.class}`}>
                           {stock.text}
                         </span>
                       </td>
                       <td className="py-4 px-4">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 whitespace-nowrap">
                           <button
                             onClick={() => router.push(`/drugs/${drug._id}`)}
-                            className="w-9 h-9 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 flex items-center justify-center text-base"
+                            className="w-9 h-9 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 flex items-center justify-center text-base flex-shrink-0"
                             title="عرض"
                           >
                             👁️
                           </button>
                           <button
                             onClick={() => router.push(`/drugs/${drug._id}/edit`)}
-                            className="w-9 h-9 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-600 flex items-center justify-center text-base"
+                            className="w-9 h-9 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-600 flex items-center justify-center text-base flex-shrink-0"
                             title="تعديل"
                           >
                             ✏️
                           </button>
                           <button
                             onClick={() => handleDelete(drug._id, drug.name)}
-                            className="w-9 h-9 rounded-lg bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center text-base"
+                            className="w-9 h-9 rounded-lg bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center text-base flex-shrink-0"
                             title="حذف"
                           >
                             🗑️
@@ -268,7 +268,7 @@ export default function DrugsPage() {
             </table>
           </div>
 
-          {/* Pagination */}
+          {/* Pagination - mobilde alt alta, tam genişlik */}
           {filteredDrugs.length > 0 && (
             <div className="p-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
               <p className="text-sm text-gray-600">

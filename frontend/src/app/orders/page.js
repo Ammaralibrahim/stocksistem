@@ -115,7 +115,7 @@ export default function OrdersPage() {
           </div>
           <Link
             href="/orders/new"
-            className="inline-flex items-center justify-center px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-medium shadow-lg shadow-blue-500/20 hover:shadow-xl transition-all active:scale-95"
+            className="inline-flex items-center justify-center px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-medium shadow-lg shadow-blue-500/20 hover:shadow-xl transition-all active:scale-95 min-h-[48px]"
           >
             <span className="ml-2 text-lg">✨</span>
             طلب جديد
@@ -159,7 +159,7 @@ export default function OrdersPage() {
             <div className="flex-1 relative">
               <input
                 type="text"
-                className="w-full h-12 pr-11 pl-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-right"
+                className="w-full h-12 pr-11 pl-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-right text-base"
                 placeholder="ابحث بالعميل، رقم الطلب أو الهاتف..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -168,7 +168,7 @@ export default function OrdersPage() {
               {searchTerm && (
                 <button
                   onClick={() => setSearchTerm('')}
-                  className="absolute left-3 top-3.5 text-gray-400 hover:text-gray-600 text-lg"
+                  className="absolute left-3 top-3.5 text-gray-400 hover:text-gray-600 text-lg w-8 h-8 flex items-center justify-center"
                 >
                   ✕
                 </button>
@@ -177,7 +177,7 @@ export default function OrdersPage() {
             <div className="flex gap-2">
               <button
                 onClick={() => setFilter('all')}
-                className={`px-4 h-12 rounded-xl font-medium transition-all ${
+                className={`px-4 h-12 rounded-xl font-medium transition-all text-sm ${
                   filter === 'all' ? 'bg-blue-500 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -185,7 +185,7 @@ export default function OrdersPage() {
               </button>
               <button
                 onClick={() => setFilter('today')}
-                className={`px-4 h-12 rounded-xl font-medium transition-all ${
+                className={`px-4 h-12 rounded-xl font-medium transition-all text-sm ${
                   filter === 'today' ? 'bg-purple-500 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -200,7 +200,7 @@ export default function OrdersPage() {
                 <button
                   key={status}
                   onClick={() => setFilter(status)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                  className={`px-4 py-2 rounded-lg font-medium transition-all text-sm ${
                     filter === status ? cfg.badge + ' text-white shadow-sm' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
@@ -229,7 +229,7 @@ export default function OrdersPage() {
                 {searchTerm ? 'حاول بكلمات بحث مختلفة' : filter === 'today' ? 'لم يتم إنشاء أي طلبات اليوم' : 'ابدأ بإنشاء طلب جديد'}
               </p>
               {!searchTerm && filter !== 'today' && (
-                <Link href="/orders/new" className="mt-6 inline-block px-6 py-3 bg-blue-500 text-white rounded-xl font-medium shadow-md">
+                <Link href="/orders/new" className="mt-6 inline-block px-6 py-3 bg-blue-500 text-white rounded-xl font-medium shadow-md min-h-[48px]">
                   ✨ إنشاء أول طلب
                 </Link>
               )}
@@ -239,12 +239,12 @@ export default function OrdersPage() {
               <table className="w-full min-w-[800px]">
                 <thead>
                   <tr className="border-b border-gray-100">
-                    <th className="text-right py-4 px-4 text-sm font-medium text-gray-500">الطلب</th>
-                    <th className="text-right py-4 px-4 text-sm font-medium text-gray-500">العميل</th>
-                    <th className="text-right py-4 px-4 text-sm font-medium text-gray-500">التاريخ</th>
-                    <th className="text-right py-4 px-4 text-sm font-medium text-gray-500">المبلغ</th>
-                    <th className="text-right py-4 px-4 text-sm font-medium text-gray-500">الحالة</th>
-                    <th className="text-right py-4 px-4 text-sm font-medium text-gray-500">الإجراءات</th>
+                    <th className="text-right py-4 px-4 text-sm font-medium text-gray-500 whitespace-nowrap">الطلب</th>
+                    <th className="text-right py-4 px-4 text-sm font-medium text-gray-500 whitespace-nowrap">العميل</th>
+                    <th className="text-right py-4 px-4 text-sm font-medium text-gray-500 whitespace-nowrap">التاريخ</th>
+                    <th className="text-right py-4 px-4 text-sm font-medium text-gray-500 whitespace-nowrap">المبلغ</th>
+                    <th className="text-right py-4 px-4 text-sm font-medium text-gray-500 whitespace-nowrap">الحالة</th>
+                    <th className="text-right py-4 px-4 text-sm font-medium text-gray-500 whitespace-nowrap">الإجراءات</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -253,8 +253,8 @@ export default function OrdersPage() {
                     return (
                       <tr key={order._id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                         <td className="py-4 px-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">📦</div>
+                          <div className="flex items-center gap-3 whitespace-nowrap">
+                            <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 flex-shrink-0">📦</div>
                             <div>
                               <p className="font-medium text-gray-900">#{order.orderNumber || order._id?.slice(-8)}</p>
                               <p className="text-xs text-gray-500">{order.items?.length || 0} منتج</p>
@@ -262,18 +262,22 @@ export default function OrdersPage() {
                           </div>
                         </td>
                         <td className="py-4 px-4">
-                          <p className="font-medium text-gray-900">{order.customerName || 'عميل'}</p>
-                          {order.customerPhone && <p className="text-xs text-gray-500">{order.customerPhone}</p>}
+                          <div className="whitespace-nowrap">
+                            <p className="font-medium text-gray-900">{order.customerName || 'عميل'}</p>
+                            {order.customerPhone && <p className="text-xs text-gray-500">{order.customerPhone}</p>}
+                          </div>
                         </td>
                         <td className="py-4 px-4">
-                          <p className="text-sm text-gray-900">{order.createdAt ? format(new Date(order.createdAt), 'dd/MM/yyyy') : '-'}</p>
-                          <p className="text-xs text-gray-500">{order.createdAt ? format(new Date(order.createdAt), 'HH:mm') : ''}</p>
+                          <div className="whitespace-nowrap">
+                            <p className="text-sm text-gray-900">{order.createdAt ? format(new Date(order.createdAt), 'dd/MM/yyyy') : '-'}</p>
+                            <p className="text-xs text-gray-500">{order.createdAt ? format(new Date(order.createdAt), 'HH:mm') : ''}</p>
+                          </div>
                         </td>
                         <td className="py-4 px-4">
-                          <p className="font-bold text-gray-900">{(order.totalAmount || 0).toFixed(2)} ر.س</p>
+                          <p className="font-bold text-gray-900 whitespace-nowrap">{(order.totalAmount || 0).toFixed(2)} ر.س</p>
                         </td>
                         <td className="py-4 px-4">
-                          <div className="space-y-2">
+                          <div className="space-y-2 whitespace-nowrap">
                             <span className={`px-3 py-1 rounded-full text-xs font-medium ${status.color}`}>
                               {status.icon} {status.text}
                             </span>
@@ -289,24 +293,24 @@ export default function OrdersPage() {
                           </div>
                         </td>
                         <td className="py-4 px-4">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 whitespace-nowrap">
                             <button
                               onClick={() => router.push(`/orders/${order._id}`)}
-                              className="w-9 h-9 rounded-lg bg-blue-100 hover:bg-blue-200 flex items-center justify-center text-blue-600 transition-colors"
+                              className="w-9 h-9 rounded-lg bg-blue-100 hover:bg-blue-200 flex items-center justify-center text-blue-600 transition-colors flex-shrink-0"
                               title="عرض"
                             >
                               👁️
                             </button>
                             <button
                               onClick={() => router.push(`/orders/${order._id}/edit`)}
-                              className="w-9 h-9 rounded-lg bg-amber-100 hover:bg-amber-200 flex items-center justify-center text-amber-600 transition-colors"
+                              className="w-9 h-9 rounded-lg bg-amber-100 hover:bg-amber-200 flex items-center justify-center text-amber-600 transition-colors flex-shrink-0"
                               title="تعديل"
                             >
                               ✏️
                             </button>
                             <button
                               onClick={() => handleDelete(order._id, order.orderNumber || order._id.slice(-8))}
-                              className="w-9 h-9 rounded-lg bg-red-100 hover:bg-red-200 flex items-center justify-center text-red-600 transition-colors"
+                              className="w-9 h-9 rounded-lg bg-red-100 hover:bg-red-200 flex items-center justify-center text-red-600 transition-colors flex-shrink-0"
                               title="حذف"
                             >
                               🗑️
