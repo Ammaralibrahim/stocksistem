@@ -1,3 +1,4 @@
+// app/orders/page.tsx
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -62,7 +63,6 @@ export default function OrdersPage() {
     try {
       await api.delete(`/orders/${orderId}`)
       toast.success('تم حذف الطلب')
-      // تحديث القائمة بدون إعادة تحميل كاملة
       setOrders(prev => prev.filter(o => o._id !== orderId))
     } catch (error) {
       console.error('خطأ في حذف الطلب:', error)
@@ -105,46 +105,48 @@ export default function OrdersPage() {
   if (loading) return <LoadingSpinner message="جاري تحميل الطلبات..." />
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white p-3 md:p-6" dir="rtl">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white p-3 md:p-6" dir="rtl">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        {/* الهيدر – زر الطلب الجديد يأخذ العرض الكامل في الموبايل */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">الطلبات</h1>
+            <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-l from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              الطلبات
+            </h1>
             <p className="text-gray-500 text-sm mt-1">إدارة ومتابعة الطلبات</p>
           </div>
           <Link
             href="/orders/new"
-            className="inline-flex items-center justify-center px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-medium shadow-lg shadow-blue-500/20 hover:shadow-xl transition-all active:scale-95 min-h-[48px]"
+            className="w-full sm:w-auto inline-flex items-center justify-center px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-medium shadow-lg shadow-blue-500/30 hover:shadow-xl transition-all active:scale-[0.98] min-h-[48px]"
           >
             <span className="ml-2 text-lg">✨</span>
             طلب جديد
           </Link>
         </div>
 
-        {/* Stats Cards */}
+        {/* بطاقات الإحصائيات */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 p-4 shadow-sm">
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 text-lg">📊</div>
+              <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 text-lg shadow-inner">📊</div>
               <div>
                 <p className="text-xs text-gray-500">إجمالي الطلبات</p>
                 <p className="text-xl font-bold text-gray-900">{stats.total}</p>
               </div>
             </div>
           </div>
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 p-4 shadow-sm">
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600 text-lg">💰</div>
+              <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600 text-lg shadow-inner">💰</div>
               <div>
                 <p className="text-xs text-gray-500">إجمالي المبلغ</p>
                 <p className="text-xl font-bold text-gray-900">{stats.amount.toFixed(2)} ر.س</p>
               </div>
             </div>
           </div>
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 p-4 shadow-sm">
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center text-purple-600 text-lg">📅</div>
+              <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center text-purple-600 text-lg shadow-inner">📅</div>
               <div>
                 <p className="text-xs text-gray-500">طلبات اليوم</p>
                 <p className="text-xl font-bold text-gray-900">{stats.today}</p>
@@ -153,7 +155,7 @@ export default function OrdersPage() {
           </div>
         </div>
 
-        {/* Search & Filters */}
+        {/* البحث والتصفية */}
         <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-6 shadow-sm">
           <div className="flex flex-col md:flex-row gap-3">
             <div className="flex-1 relative">
@@ -177,16 +179,20 @@ export default function OrdersPage() {
             <div className="flex gap-2">
               <button
                 onClick={() => setFilter('all')}
-                className={`px-4 h-12 rounded-xl font-medium transition-all text-sm ${
-                  filter === 'all' ? 'bg-blue-500 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                className={`px-4 h-12 rounded-xl font-medium transition-all text-sm min-w-[64px] ${
+                  filter === 'all'
+                    ? 'bg-blue-500 text-white shadow-md shadow-blue-500/30'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
                 الكل
               </button>
               <button
                 onClick={() => setFilter('today')}
-                className={`px-4 h-12 rounded-xl font-medium transition-all text-sm ${
-                  filter === 'today' ? 'bg-purple-500 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                className={`px-4 h-12 rounded-xl font-medium transition-all text-sm min-w-[64px] ${
+                  filter === 'today'
+                    ? 'bg-purple-500 text-white shadow-md shadow-purple-500/30'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
                 اليوم
@@ -201,7 +207,9 @@ export default function OrdersPage() {
                   key={status}
                   onClick={() => setFilter(status)}
                   className={`px-4 py-2 rounded-lg font-medium transition-all text-sm ${
-                    filter === status ? cfg.badge + ' text-white shadow-sm' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    filter === status
+                      ? `${cfg.badge} text-white shadow-sm`
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
                   <span className="ml-1">{cfg.icon}</span>
@@ -212,7 +220,7 @@ export default function OrdersPage() {
           </div>
         </div>
 
-        {/* Orders List (Card view on mobile, table on desktop) */}
+        {/* جدول الطلبات مع إمكانية التمرير الأفقي فقط للجدول */}
         <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
           <div className="p-4 border-b border-gray-100 flex justify-between items-center">
             <h2 className="font-semibold text-gray-900">الطلبات ({filteredOrders.length})</h2>
@@ -229,7 +237,10 @@ export default function OrdersPage() {
                 {searchTerm ? 'حاول بكلمات بحث مختلفة' : filter === 'today' ? 'لم يتم إنشاء أي طلبات اليوم' : 'ابدأ بإنشاء طلب جديد'}
               </p>
               {!searchTerm && filter !== 'today' && (
-                <Link href="/orders/new" className="mt-6 inline-block px-6 py-3 bg-blue-500 text-white rounded-xl font-medium shadow-md min-h-[48px]">
+                <Link
+                  href="/orders/new"
+                  className="mt-6 inline-block px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-medium shadow-lg shadow-blue-500/30 min-h-[48px]"
+                >
                   ✨ إنشاء أول طلب
                 </Link>
               )}
@@ -238,7 +249,7 @@ export default function OrdersPage() {
             <div className="overflow-x-auto">
               <table className="w-full min-w-[800px]">
                 <thead>
-                  <tr className="border-b border-gray-100">
+                  <tr className="border-b border-gray-100 bg-gray-50/50">
                     <th className="text-right py-4 px-4 text-sm font-medium text-gray-500 whitespace-nowrap">الطلب</th>
                     <th className="text-right py-4 px-4 text-sm font-medium text-gray-500 whitespace-nowrap">العميل</th>
                     <th className="text-right py-4 px-4 text-sm font-medium text-gray-500 whitespace-nowrap">التاريخ</th>
@@ -254,7 +265,9 @@ export default function OrdersPage() {
                       <tr key={order._id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-3 whitespace-nowrap">
-                            <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 flex-shrink-0">📦</div>
+                            <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 flex-shrink-0 shadow-inner">
+                              📦
+                            </div>
                             <div>
                               <p className="font-medium text-gray-900">#{order.orderNumber || order._id?.slice(-8)}</p>
                               <p className="text-xs text-gray-500">{order.items?.length || 0} منتج</p>
@@ -284,7 +297,7 @@ export default function OrdersPage() {
                             <select
                               value={order.status}
                               onChange={(e) => handleStatusChange(order._id, e.target.value)}
-                              className="w-full text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                              className="w-full text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500 min-h-[44px]"
                             >
                               <option value="قيد الانتظار">قيد الانتظار</option>
                               <option value="قيد التوصيل">قيد التوصيل</option>
@@ -296,21 +309,21 @@ export default function OrdersPage() {
                           <div className="flex items-center gap-2 whitespace-nowrap">
                             <button
                               onClick={() => router.push(`/orders/${order._id}`)}
-                              className="w-9 h-9 rounded-lg bg-blue-100 hover:bg-blue-200 flex items-center justify-center text-blue-600 transition-colors flex-shrink-0"
+                              className="w-10 h-10 rounded-lg bg-blue-100 hover:bg-blue-200 flex items-center justify-center text-blue-600 transition-colors flex-shrink-0 shadow-sm"
                               title="عرض"
                             >
                               👁️
                             </button>
                             <button
                               onClick={() => router.push(`/orders/${order._id}/edit`)}
-                              className="w-9 h-9 rounded-lg bg-amber-100 hover:bg-amber-200 flex items-center justify-center text-amber-600 transition-colors flex-shrink-0"
+                              className="w-10 h-10 rounded-lg bg-amber-100 hover:bg-amber-200 flex items-center justify-center text-amber-600 transition-colors flex-shrink-0 shadow-sm"
                               title="تعديل"
                             >
                               ✏️
                             </button>
                             <button
                               onClick={() => handleDelete(order._id, order.orderNumber || order._id.slice(-8))}
-                              className="w-9 h-9 rounded-lg bg-red-100 hover:bg-red-200 flex items-center justify-center text-red-600 transition-colors flex-shrink-0"
+                              className="w-10 h-10 rounded-lg bg-red-100 hover:bg-red-200 flex items-center justify-center text-red-600 transition-colors flex-shrink-0 shadow-sm"
                               title="حذف"
                             >
                               🗑️

@@ -1,3 +1,4 @@
+// app/drugs/page.tsx
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
@@ -84,39 +85,41 @@ export default function DrugsPage() {
   if (loading) return <LoadingSpinner message="جاري تحميل الأدوية..." />
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white p-3 md:p-6" dir="rtl">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white p-3 md:p-6" dir="rtl">
       <div className="max-w-7xl mx-auto">
-        {/* Header - mobilde butonlar tam genişlik */}
+        {/* الهيدر – الأزرار تأخذ العرض الكامل في الموبايل */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>
-            <h1 className="text-xl md:text-3xl font-bold text-gray-900">الأدوية</h1>
+            <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-l from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+              الأدوية
+            </h1>
             <p className="text-sm text-gray-500 mt-1">إدارة مخزون الأدوية ({drugs.length})</p>
           </div>
           <div className="flex flex-wrap gap-3 w-full sm:w-auto">
             {selectedDrugs.length > 0 && (
               <button
                 onClick={handleBulkDelete}
-                className="flex-1 sm:flex-none px-4 py-3 bg-red-500 text-white rounded-xl shadow-md text-sm min-h-[48px]"
+                className="flex-1 sm:flex-none px-4 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl shadow-md shadow-red-500/30 hover:shadow-lg transition-all active:scale-[0.98] min-h-[48px] text-sm"
               >
                 🗑️ حذف المختارة ({selectedDrugs.length})
               </button>
             )}
             <Link
               href="/drugs/new"
-              className="flex-1 sm:flex-none px-5 py-3 bg-blue-500 text-white rounded-xl shadow-md flex items-center justify-center gap-2 text-sm min-h-[48px]"
+              className="flex-1 sm:flex-none px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl shadow-md shadow-blue-500/30 hover:shadow-lg transition-all active:scale-[0.98] min-h-[48px] flex items-center justify-center gap-2 text-sm"
             >
               <span>✨</span> إضافة دواء
             </Link>
           </div>
         </div>
 
-        {/* Arama ve filtreler - mobilde alt alta dizilir, taşma yapmaz */}
+        {/* البحث والتصفية */}
         <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-6 shadow-sm">
           <div className="flex flex-col md:flex-row gap-3">
             <div className="flex-1 relative">
               <input
                 type="text"
-                className="w-full h-12 pr-11 pl-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-base"
+                className="w-full h-12 pr-11 pl-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-base"
                 placeholder="ابحث بالاسم، الباركود، الفئة..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -134,24 +137,30 @@ export default function DrugsPage() {
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setFilter('all')}
-                className={`flex-1 sm:flex-none px-4 h-12 rounded-xl font-medium transition-all text-sm ${
-                  filter === 'all' ? 'bg-blue-500 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                className={`flex-1 sm:flex-none px-4 h-12 rounded-xl font-medium transition-all text-sm min-w-[64px] ${
+                  filter === 'all'
+                    ? 'bg-blue-500 text-white shadow-md shadow-blue-500/30'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
                 الكل
               </button>
               <button
                 onClick={() => setFilter('low-stock')}
-                className={`flex-1 sm:flex-none px-4 h-12 rounded-xl font-medium transition-all text-sm ${
-                  filter === 'low-stock' ? 'bg-amber-500 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                className={`flex-1 sm:flex-none px-4 h-12 rounded-xl font-medium transition-all text-sm min-w-[80px] ${
+                  filter === 'low-stock'
+                    ? 'bg-amber-500 text-white shadow-md shadow-amber-500/30'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
                 ⚡ مخزون منخفض
               </button>
               <button
                 onClick={() => setFilter('expiring')}
-                className={`flex-1 sm:flex-none px-4 h-12 rounded-xl font-medium transition-all text-sm ${
-                  filter === 'expiring' ? 'bg-red-500 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                className={`flex-1 sm:flex-none px-4 h-12 rounded-xl font-medium transition-all text-sm min-w-[80px] ${
+                  filter === 'expiring'
+                    ? 'bg-red-500 text-white shadow-md shadow-red-500/30'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
                 ⏰ صلاحية قريبة
@@ -160,7 +169,7 @@ export default function DrugsPage() {
           </div>
         </div>
 
-        {/* Tablo - sadece bu alan yatay kaydırılabilir, diğer her şey mobil ekrana sığar */}
+        {/* جدول الأدوية مع تمرير أفقي فقط للجدول */}
         <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[800px] md:min-w-full">
@@ -173,7 +182,7 @@ export default function DrugsPage() {
                         setSelectedDrugs(e.target.checked ? currentDrugs.map(d => d._id) : [])
                       }
                       checked={selectedDrugs.length === currentDrugs.length && currentDrugs.length > 0}
-                      className="w-5 h-5 rounded border-gray-300"
+                      className="w-5 h-5 rounded border-gray-300 focus:ring-blue-500"
                     />
                   </th>
                   <th className="text-right py-4 px-4 text-sm font-medium text-gray-500 whitespace-nowrap">الدواء</th>
@@ -188,7 +197,7 @@ export default function DrugsPage() {
                 {currentDrugs.map(drug => {
                   const stock = getStockStatus(drug.stock)
                   return (
-                    <tr key={drug._id} className="border-b border-gray-50 hover:bg-gray-50/50">
+                    <tr key={drug._id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                       <td className="py-4 px-4">
                         <input
                           type="checkbox"
@@ -200,12 +209,12 @@ export default function DrugsPage() {
                                 : [...prev, drug._id]
                             )
                           }
-                          className="w-5 h-5 rounded border-gray-300"
+                          className="w-5 h-5 rounded border-gray-300 focus:ring-blue-500"
                         />
                       </td>
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-3 whitespace-nowrap">
-                          <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-blue-100 flex items-center justify-center text-base md:text-lg flex-shrink-0">
+                          <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-lg shadow-inner flex-shrink-0">
                             💊
                           </div>
                           <div>
@@ -225,7 +234,7 @@ export default function DrugsPage() {
                         {drug.expiryDate ? format(new Date(drug.expiryDate), 'dd/MM/yyyy', { locale: ar }) : '-'}
                       </td>
                       <td className="py-4 px-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 md:px-3 md:py-1 rounded-full text-xs font-medium ${stock.class}`}>
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${stock.class}`}>
                           {stock.text}
                         </span>
                       </td>
@@ -233,21 +242,21 @@ export default function DrugsPage() {
                         <div className="flex items-center gap-2 whitespace-nowrap">
                           <button
                             onClick={() => router.push(`/drugs/${drug._id}`)}
-                            className="w-9 h-9 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 flex items-center justify-center text-base flex-shrink-0"
+                            className="w-10 h-10 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 flex items-center justify-center text-base shadow-sm transition-colors flex-shrink-0"
                             title="عرض"
                           >
                             👁️
                           </button>
                           <button
                             onClick={() => router.push(`/drugs/${drug._id}/edit`)}
-                            className="w-9 h-9 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-600 flex items-center justify-center text-base flex-shrink-0"
+                            className="w-10 h-10 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-600 flex items-center justify-center text-base shadow-sm transition-colors flex-shrink-0"
                             title="تعديل"
                           >
                             ✏️
                           </button>
                           <button
                             onClick={() => handleDelete(drug._id, drug.name)}
-                            className="w-9 h-9 rounded-lg bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center text-base flex-shrink-0"
+                            className="w-10 h-10 rounded-lg bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center text-base shadow-sm transition-colors flex-shrink-0"
                             title="حذف"
                           >
                             🗑️
@@ -268,7 +277,7 @@ export default function DrugsPage() {
             </table>
           </div>
 
-          {/* Pagination - mobilde alt alta, tam genişlik */}
+          {/* ترقيم الصفحات – مناسب للموبايل */}
           {filteredDrugs.length > 0 && (
             <div className="p-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
               <p className="text-sm text-gray-600">
@@ -278,17 +287,17 @@ export default function DrugsPage() {
                 <button
                   onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
                   disabled={currentPage === 1}
-                  className="px-3 py-2 bg-gray-100 rounded-lg disabled:opacity-50 min-h-[44px] min-w-[44px] text-sm"
+                  className="px-3 py-2 bg-gray-100 rounded-lg disabled:opacity-50 min-w-[44px] min-h-[44px] text-sm hover:bg-gray-200 transition-colors"
                 >
                   → السابق
                 </button>
-                <span className="px-4 py-2 bg-blue-500 text-white rounded-lg min-w-[44px] text-center text-sm">
+                <span className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg min-w-[44px] text-center text-sm shadow-sm">
                   {currentPage}
                 </span>
                 <button
                   onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
                   disabled={currentPage === totalPages}
-                  className="px-3 py-2 bg-gray-100 rounded-lg disabled:opacity-50 min-h-[44px] min-w-[44px] text-sm"
+                  className="px-3 py-2 bg-gray-100 rounded-lg disabled:opacity-50 min-w-[44px] min-h-[44px] text-sm hover:bg-gray-200 transition-colors"
                 >
                   التالي ←
                 </button>
