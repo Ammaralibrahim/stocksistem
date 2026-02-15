@@ -1,4 +1,3 @@
-// drugs/new/page.tsx
 'use client'
 
 import { useState } from 'react'
@@ -68,7 +67,7 @@ export default function NewDrugPage() {
           <Link href="/drugs" className="text-gray-600 hover:text-gray-900 text-lg w-8 h-8 flex items-center justify-center">
             ←
           </Link>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">إضافة دواء جديد</h1>
+          <h1 className="text-xl md:text-3xl font-bold text-gray-900">إضافة دواء جديد</h1>
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-100 p-4 md:p-6 shadow-sm">
@@ -217,14 +216,14 @@ export default function NewDrugPage() {
             <div className="flex flex-col-reverse sm:flex-row gap-4 pt-6 border-t border-gray-200">
               <Link
                 href="/drugs"
-                className="flex-1 px-8 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium text-center min-h-[48px] flex items-center justify-center"
+                className="flex-1 px-8 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium text-center min-h-[48px] flex items-center justify-center text-sm md:text-base"
               >
                 إلغاء
               </Link>
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 px-8 py-3 bg-emerald-500 text-white rounded-xl font-medium shadow-md disabled:opacity-70 min-h-[48px] flex items-center justify-center"
+                className="flex-1 px-8 py-3 bg-emerald-500 text-white rounded-xl font-medium shadow-md disabled:opacity-70 min-h-[48px] flex items-center justify-center text-sm md:text-base"
               >
                 {loading ? 'جاري...' : '✅ حفظ الدواء'}
               </button>

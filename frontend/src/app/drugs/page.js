@@ -1,4 +1,3 @@
-// drugs/page.tsx
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
@@ -87,31 +86,31 @@ export default function DrugsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white p-3 md:p-6" dir="rtl">
       <div className="max-w-7xl mx-auto">
-        {/* Header: mobilde alt alta, masaüstünde yan yana */}
+        {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">الأدوية</h1>
-            <p className="text-gray-500 text-sm mt-1">إدارة مخزون الأدوية ({drugs.length})</p>
+            <h1 className="text-xl md:text-3xl font-bold text-gray-900">الأدوية</h1>
+            <p className="text-sm text-gray-500 mt-1">إدارة مخزون الأدوية ({drugs.length})</p>
           </div>
           <div className="flex flex-wrap gap-3 w-full sm:w-auto">
             {selectedDrugs.length > 0 && (
               <button
                 onClick={handleBulkDelete}
-                className="flex-1 sm:flex-none px-4 py-2 bg-red-500 text-white rounded-xl shadow-md text-sm min-h-[44px]"
+                className="flex-1 sm:flex-none px-4 py-3 bg-red-500 text-white rounded-xl shadow-md text-sm min-h-[48px]"
               >
                 🗑️ حذف المختارة ({selectedDrugs.length})
               </button>
             )}
             <Link
               href="/drugs/new"
-              className="flex-1 sm:flex-none px-5 py-2 bg-blue-500 text-white rounded-xl shadow-md flex items-center justify-center gap-2 text-sm min-h-[44px]"
+              className="flex-1 sm:flex-none px-5 py-3 bg-blue-500 text-white rounded-xl shadow-md flex items-center justify-center gap-2 text-sm min-h-[48px]"
             >
               <span>✨</span> إضافة دواء
             </Link>
           </div>
         </div>
 
-        {/* Arama ve filtreler: mobilde dikey, masaüstünde yatay */}
+        {/* Arama ve filtreler */}
         <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-6 shadow-sm">
           <div className="flex flex-col md:flex-row gap-3">
             <div className="flex-1 relative">
@@ -161,10 +160,10 @@ export default function DrugsPage() {
           </div>
         </div>
 
-        {/* Tablo - yatay kaydırılabilir */}
+        {/* Tablo */}
         <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[900px]">
+            <table className="w-full min-w-[800px] md:min-w-full">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50/50">
                   <th className="py-4 px-4 w-10">
@@ -206,11 +205,11 @@ export default function DrugsPage() {
                       </td>
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-xl">
+                          <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-blue-100 flex items-center justify-center text-base md:text-lg">
                             💊
                           </div>
                           <div>
-                            <p className="font-medium text-gray-900">{drug.name}</p>
+                            <p className="font-medium text-gray-900 text-sm md:text-base">{drug.name}</p>
                             {drug.category && <p className="text-xs text-gray-500">{drug.category}</p>}
                           </div>
                         </div>
@@ -218,15 +217,15 @@ export default function DrugsPage() {
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-2">
                           <span className={`w-2 h-2 rounded-full ${stock.dot}`}></span>
-                          <span>{drug.stock} وحدة</span>
+                          <span className="text-sm">{drug.stock} وحدة</span>
                         </div>
                       </td>
-                      <td className="py-4 px-4 font-bold">{drug.price} ر.س</td>
-                      <td className="py-4 px-4">
+                      <td className="py-4 px-4 font-bold text-sm">{drug.price} ر.س</td>
+                      <td className="py-4 px-4 text-sm">
                         {drug.expiryDate ? format(new Date(drug.expiryDate), 'dd/MM/yyyy', { locale: ar }) : '-'}
                       </td>
                       <td className="py-4 px-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${stock.class}`}>
+                        <span className={`px-2 py-1 md:px-3 md:py-1 rounded-full text-xs font-medium ${stock.class}`}>
                           {stock.text}
                         </span>
                       </td>
@@ -234,19 +233,22 @@ export default function DrugsPage() {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => router.push(`/drugs/${drug._id}`)}
-                            className="w-9 h-9 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 flex items-center justify-center text-lg"
+                            className="w-9 h-9 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 flex items-center justify-center text-base"
+                            title="عرض"
                           >
                             👁️
                           </button>
                           <button
                             onClick={() => router.push(`/drugs/${drug._id}/edit`)}
-                            className="w-9 h-9 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-600 flex items-center justify-center text-lg"
+                            className="w-9 h-9 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-600 flex items-center justify-center text-base"
+                            title="تعديل"
                           >
                             ✏️
                           </button>
                           <button
                             onClick={() => handleDelete(drug._id, drug.name)}
-                            className="w-9 h-9 rounded-lg bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center text-lg"
+                            className="w-9 h-9 rounded-lg bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center text-base"
+                            title="حذف"
                           >
                             🗑️
                           </button>
@@ -257,7 +259,7 @@ export default function DrugsPage() {
                 })}
                 {currentDrugs.length === 0 && (
                   <tr>
-                    <td colSpan="7" className="py-12 text-center text-gray-500">
+                    <td colSpan="7" className="py-12 text-center text-gray-500 text-sm">
                       لا توجد أدوية
                     </td>
                   </tr>
@@ -266,7 +268,7 @@ export default function DrugsPage() {
             </table>
           </div>
 
-          {/* Pagination: mobilde alt alta */}
+          {/* Pagination */}
           {filteredDrugs.length > 0 && (
             <div className="p-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
               <p className="text-sm text-gray-600">
@@ -280,7 +282,7 @@ export default function DrugsPage() {
                 >
                   → السابق
                 </button>
-                <span className="px-4 py-2 bg-blue-500 text-white rounded-lg min-w-[44px] text-center">
+                <span className="px-4 py-2 bg-blue-500 text-white rounded-lg min-w-[44px] text-center text-sm">
                   {currentPage}
                 </span>
                 <button

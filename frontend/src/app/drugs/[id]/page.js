@@ -1,4 +1,3 @@
-// drugs/[id]/edit/page.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -114,7 +113,7 @@ export default function EditDrugPage() {
           <Link href="/drugs" className="text-gray-600 hover:text-gray-900 text-lg w-8 h-8 flex items-center justify-center">
             ←
           </Link>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">تعديل الدواء</h1>
+          <h1 className="text-xl md:text-3xl font-bold text-gray-900">تعديل الدواء</h1>
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-100 p-4 md:p-6 shadow-sm">
@@ -256,21 +255,21 @@ export default function EditDrugPage() {
               <button
                 type="button"
                 onClick={handleDelete}
-                className="w-full sm:w-auto px-8 py-3 bg-red-500 text-white rounded-xl font-medium shadow-md min-h-[48px] flex items-center justify-center"
+                className="w-full sm:w-auto px-8 py-3 bg-red-500 text-white rounded-xl font-medium shadow-md min-h-[48px] flex items-center justify-center text-sm md:text-base"
               >
                 🗑️ حذف
               </button>
               <div className="flex flex-col-reverse sm:flex-row gap-4 w-full sm:w-auto">
                 <Link
                   href="/drugs"
-                  className="flex-1 sm:flex-none px-8 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium text-center min-h-[48px] flex items-center justify-center"
+                  className="flex-1 sm:flex-none px-8 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium text-center min-h-[48px] flex items-center justify-center text-sm md:text-base"
                 >
                   إلغاء
                 </Link>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex-1 sm:flex-none px-8 py-3 bg-emerald-500 text-white rounded-xl font-medium shadow-md disabled:opacity-70 min-h-[48px] flex items-center justify-center"
+                  className="flex-1 sm:flex-none px-8 py-3 bg-emerald-500 text-white rounded-xl font-medium shadow-md disabled:opacity-70 min-h-[48px] flex items-center justify-center text-sm md:text-base"
                 >
                   {saving ? 'جاري...' : '✅ تحديث الدواء'}
                 </button>

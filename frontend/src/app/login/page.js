@@ -125,8 +125,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col justify-center py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
-      {/* خلفية حديثة - تبقى كما هي مع تحجيم أفضل على الشاشات الصغيرة */}
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col justify-center py-6 sm:py-12 px-4 sm:px-6 lg:px-8">
+      {/* خلفية حديثة */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-64 h-64 sm:w-80 sm:h-80 bg-blue-50 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
         <div className="absolute -bottom-40 -left-40 w-64 h-64 sm:w-80 sm:h-80 bg-purple-50 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
@@ -145,7 +145,7 @@ export default function LoginPage() {
               <div className="absolute -bottom-2 -right-2 w-5 h-5 sm:w-6 sm:h-6 bg-blue-100 rounded-full border-4 border-white"></div>
             </div>
           </div>
-          <h1 className="mt-4 sm:mt-6 text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight">
+          <h1 className="mt-4 sm:mt-6 text-2xl sm:text-4xl font-bold text-gray-900 tracking-tight">
             مستودع الأدوية
           </h1>
           <p className="mt-1 text-xs sm:text-sm text-gray-500">
@@ -153,11 +153,11 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* بطاقات حالة النظام - متجاوبة مع شبكة مرنة */}
-        <div className="mb-6 sm:mb-8 grid grid-cols-1 xs:grid-cols-3 gap-2 sm:gap-3">
-          <div className={`p-3 sm:p-4 rounded-xl border ${serverStatus.backend ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'} transition-all duration-300`}>
+        {/* بطاقات حالة النظام */}
+        <div className="mb-6 sm:mb-8 grid grid-cols-3 gap-2 sm:gap-3">
+          <div className={`p-2 sm:p-4 rounded-xl border ${serverStatus.backend ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'} transition-all duration-300`}>
             <div className="flex items-center justify-between">
-              <span className="text-xs sm:text-sm font-medium text-gray-700">الخلفية</span>
+              <span className="text-xs font-medium text-gray-700">الخلفية</span>
               <div className={`w-2 h-2 rounded-full ${serverStatus.backend ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
             </div>
             <p className="mt-1 text-xs text-gray-500 truncate">
@@ -165,9 +165,9 @@ export default function LoginPage() {
             </p>
           </div>
           
-          <div className={`p-3 sm:p-4 rounded-xl border ${serverStatus.database ? 'border-green-200 bg-green-50' : 'border-yellow-200 bg-yellow-50'} transition-all duration-300`}>
+          <div className={`p-2 sm:p-4 rounded-xl border ${serverStatus.database ? 'border-green-200 bg-green-50' : 'border-yellow-200 bg-yellow-50'} transition-all duration-300`}>
             <div className="flex items-center justify-between">
-              <span className="text-xs sm:text-sm font-medium text-gray-700">قاعدة البيانات</span>
+              <span className="text-xs font-medium text-gray-700">قاعدة البيانات</span>
               <div className={`w-2 h-2 rounded-full ${serverStatus.database ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
             </div>
             <p className="mt-1 text-xs text-gray-500 truncate">
@@ -175,9 +175,9 @@ export default function LoginPage() {
             </p>
           </div>
           
-          <div className="p-3 sm:p-4 rounded-xl border border-gray-200 bg-white">
+          <div className="p-2 sm:p-4 rounded-xl border border-gray-200 bg-white">
             <div className="flex items-center justify-between">
-              <span className="text-xs sm:text-sm font-medium text-gray-700">المستخدم</span>
+              <span className="text-xs font-medium text-gray-700">المستخدم</span>
               <div className="w-2 h-2 rounded-full bg-blue-500"></div>
             </div>
             <p className="mt-1 text-xs text-gray-500 truncate">نظام ثنائي المستخدم</p>
@@ -205,7 +205,7 @@ export default function LoginPage() {
                     name="username"
                     type="text"
                     required
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 outline-none text-sm sm:text-base text-gray-900 placeholder-gray-400"
+                    className="w-full px-3 sm:px-4 py-3 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 outline-none text-sm sm:text-base text-gray-900 placeholder-gray-400"
                     value={formData.username}
                     onChange={handleInputChange}
                     placeholder="admin"
@@ -221,7 +221,7 @@ export default function LoginPage() {
                     name="password"
                     type="password"
                     required
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 outline-none text-sm sm:text-base text-gray-900 placeholder-gray-400"
+                    className="w-full px-3 sm:px-4 py-3 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 outline-none text-sm sm:text-base text-gray-900 placeholder-gray-400"
                     value={formData.password}
                     onChange={handleInputChange}
                     placeholder="••••••••"
@@ -232,7 +232,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading || !serverStatus.backend}
-                className={`w-full py-2.5 sm:py-3 px-4 rounded-xl font-medium text-white transition-all duration-300 text-sm sm:text-base ${
+                className={`w-full py-3 sm:py-3 px-4 rounded-xl font-medium text-white transition-all duration-300 text-sm sm:text-base min-h-[48px] ${
                   loading || !serverStatus.backend
                     ? 'bg-gray-400 cursor-not-allowed'
                     : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg hover:shadow-xl active:scale-[0.99]'
@@ -240,7 +240,7 @@ export default function LoginPage() {
               >
                 {loading ? (
                   <div className="flex items-center justify-center">
-                    <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin ml-2"></div>
                     جاري تسجيل الدخول
                   </div>
                 ) : 'تسجيل الدخول'}
@@ -253,7 +253,7 @@ export default function LoginPage() {
                 <button
                   onClick={initializeAdmin}
                   disabled={initializing}
-                  className={`w-full py-2.5 sm:py-3 px-4 rounded-xl font-medium transition-all duration-300 text-sm sm:text-base ${
+                  className={`w-full py-3 sm:py-3 px-4 rounded-xl font-medium transition-all duration-300 text-sm sm:text-base min-h-[48px] ${
                     initializing
                       ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                       : 'bg-gradient-to-r from-gray-100 to-gray-50 hover:from-gray-200 hover:to-gray-100 border border-gray-200 text-gray-700 hover:shadow-md active:scale-[0.99]'
@@ -261,7 +261,7 @@ export default function LoginPage() {
                 >
                   {initializing ? (
                     <div className="flex items-center justify-center">
-                      <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin mr-2"></div>
+                      <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin ml-2"></div>
                       جاري الإنشاء
                     </div>
                   ) : (
@@ -340,12 +340,6 @@ export default function LoginPage() {
         }
         .animation-delay-2000 {
           animation-delay: 2s;
-        }
-        /* إضافة نقطة توقف صغيرة جداً (xs) للشاشات التي يقل عرضها عن 480px */
-        @media (min-width: 480px) {
-          .xs\:grid-cols-3 {
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-          }
         }
       `}</style>
     </div>
