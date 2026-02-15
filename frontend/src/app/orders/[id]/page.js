@@ -133,10 +133,10 @@ export default function OrderDetailPage() {
                       <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">💊</div>
                       <div>
                         <p className="font-medium text-gray-900">{item.drug?.name || 'دواء'}</p>
-                        <p className="text-xs text-gray-500">الكمية: {item.quantity} | السعر: {item.price} ر.س</p>
+                        <p className="text-xs text-gray-500">الكمية: {item.quantity} | السعر: {item.price} ل.س</p>
                       </div>
                     </div>
-                    <p className="font-bold text-gray-900">{(item.quantity * item.price).toFixed(2)} ر.س</p>
+                    <p className="font-bold text-gray-900">{(item.quantity * item.price).toFixed(2)} ل.س</p>
                   </div>
                 ))}
               </div>
@@ -144,7 +144,7 @@ export default function OrderDetailPage() {
               <div className="mt-6 pt-6 border-t border-gray-200">
                 <div className="flex justify-between items-center text-xl">
                   <span className="font-semibold text-gray-900">الإجمالي</span>
-                  <span className="font-bold text-emerald-600">{(order.totalAmount || 0).toFixed(2)} ر.س</span>
+                  <span className="font-bold text-emerald-600">{(order.totalAmount || 0).toFixed(2)} ل.س</span>
                 </div>
               </div>
             </div>

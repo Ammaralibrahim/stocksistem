@@ -130,7 +130,7 @@ export default function Dashboard() {
                 <div>
                   <p className="text-xs text-gray-500 text-right">مبيعات اليوم</p>
                   <p className="text-xl md:text-2xl font-bold text-gray-900 mt-1 text-right">
-                    {stats.todaySales.toFixed(2)} <span className="text-xs">ر.س</span>
+                    {stats.todaySales.toFixed(2)} <span className="text-xs">ل.س</span>
                   </p>
                 </div>
                 <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
@@ -158,7 +158,7 @@ export default function Dashboard() {
                 <div>
                   <p className="text-xs text-gray-500 text-right">قيمة المخزون</p>
                   <p className="text-xl md:text-2xl font-bold text-gray-900 mt-1 text-right">
-                    {stats.totalStockValue.toFixed(2)} <span className="text-xs">ر.س</span>
+                    {stats.totalStockValue.toFixed(2)} <span className="text-xs">ل.س</span>
                   </p>
                 </div>
                 <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-amber-50 flex items-center justify-center">
@@ -440,7 +440,7 @@ export default function Dashboard() {
                           </div>
                         </td>
                         <td className="py-3 md:py-4 px-2 md:px-4">
-                          <span className="font-semibold text-gray-900 text-sm">{drug.price.toFixed(2)} ر.س</span>
+                          <span className="font-semibold text-gray-900 text-sm">{drug.price.toFixed(2)} ل.س</span>
                         </td>
                         <td className="py-3 md:py-4 px-2 md:px-4">
                           <div className="flex flex-col items-end">

@@ -184,7 +184,7 @@ export default function EditOrderPage() {
                         <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">💊</div>
                         <div className="flex-1 text-right">
                           <h4 className="font-medium text-gray-900">{drug.name}</h4>
-                          <p className="text-sm text-gray-600">{drug.price} ر.س</p>
+                          <p className="text-sm text-gray-600">{drug.price} ل.س</p>
                           <p className="text-xs text-gray-500">مخزون: {drug.stock}</p>
                           {inOrder && <span className="text-xs text-amber-600">✓ موجود في الطلب</span>}
                         </div>
@@ -214,7 +214,7 @@ export default function EditOrderPage() {
                           <button onClick={() => updateQuantity(item.drug?._id, item.quantity + 1)} className="w-7 h-7 bg-white border border-amber-300 rounded-lg">+</button>
                         </div>
                       </div>
-                      <p className="font-bold">{(item.price * item.quantity).toFixed(2)} ر.س</p>
+                      <p className="font-bold">{(item.price * item.quantity).toFixed(2)} ل.س</p>
                     </div>
                   ))}
                 </div>
@@ -223,7 +223,7 @@ export default function EditOrderPage() {
                 <div className="mt-4 pt-4 border-t border-gray-200">
                   <div className="flex justify-between">
                     <span className="text-gray-600">الإجمالي</span>
-                    <span className="text-xl font-bold text-emerald-600">{total.toFixed(2)} ر.س</span>
+                    <span className="text-xl font-bold text-emerald-600">{total.toFixed(2)} ل.س</span>
                   </div>
                 </div>
               )}

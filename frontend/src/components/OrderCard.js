@@ -47,7 +47,7 @@ export default function OrderCard({ order }) {
         </div>
         <div className="text-right">
           <p className="text-xs text-gray-500">المجموع</p>
-          <p className="text-lg font-bold text-gray-900">{order?.total ? `${order.total} ر.س` : '—'}</p>
+          <p className="text-lg font-bold text-gray-900">{order?.total ? `${order.total} ل.س` : '—'}</p>
         </div>
       </div>
 

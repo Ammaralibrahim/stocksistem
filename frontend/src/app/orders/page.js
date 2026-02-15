@@ -1,21 +1,88 @@
 // app/orders/page.tsx
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { ar } from 'date-fns/locale'
 import Link from 'next/link'
 import api from '@/lib/api'
 import toast from 'react-hot-toast'
-import LoadingSpinner from '@/components/LoadingSpinner'
+
+// İkonlar
+const SearchIcon = () => <span className="text-gray-400">🔍</span>
+const ClearIcon = () => <span className="text-gray-400">✕</span>
+const DeleteIcon = () => <span>🗑️</span>
+const EditIcon = () => <span>✏️</span>
+const ViewIcon = () => <span>👁️</span>
+
+// Durum rozeti
+const StatusBadge = ({ status }) => {
+  const config = useMemo(() => {
+    switch (status) {
+      case 'قيد الانتظار':
+        return { text: 'قيد الانتظار', class: 'bg-amber-100 text-amber-800', icon: '⏳' }
+      case 'قيد التوصيل':
+        return { text: 'قيد التوصيل', class: 'bg-blue-100 text-blue-800', icon: '🚚' }
+      case 'تم التوصيل':
+        return { text: 'تم التوصيل', class: 'bg-emerald-100 text-emerald-800', icon: '✅' }
+      default:
+        return { text: status || 'غير معروف', class: 'bg-gray-100 text-gray-800', icon: '❓' }
+    }
+  }, [status])
+
+  return (
+    <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${config.class} inline-flex items-center gap-1`}>
+      <span>{config.icon}</span>
+      <span>{config.text}</span>
+    </span>
+  )
+}
+
+// İskelet kart (yüklenirken)
+const SkeletonCard = () => (
+  <div className="bg-white rounded-lg border border-gray-200 p-2.5 mb-2 animate-pulse">
+    <div className="flex items-start gap-2">
+      <div className="w-8 h-8 bg-gray-200 rounded-lg" />
+      <div className="flex-1 space-y-1">
+        <div className="w-3/4 h-3 bg-gray-200 rounded" />
+        <div className="w-1/2 h-2 bg-gray-200 rounded" />
+      </div>
+    </div>
+    <div className="grid grid-cols-2 gap-1 mt-2">
+      <div className="h-3 bg-gray-200 rounded" />
+      <div className="h-3 bg-gray-200 rounded" />
+      <div className="h-3 bg-gray-200 rounded" />
+      <div className="h-5 bg-gray-200 rounded-full" />
+    </div>
+    <div className="flex justify-between mt-2">
+      <div className="w-16 h-5 bg-gray-200 rounded-full" />
+      <div className="flex gap-1">
+        <div className="w-7 h-7 bg-gray-200 rounded-lg" />
+        <div className="w-7 h-7 bg-gray-200 rounded-lg" />
+        <div className="w-7 h-7 bg-gray-200 rounded-lg" />
+      </div>
+    </div>
+  </div>
+)
+
+// İskelet satır (tablo için)
+const SkeletonRow = () => (
+  <tr className="border-b border-gray-100 animate-pulse">
+    <td className="py-2 px-2"><div className="flex items-center gap-2"><div className="w-7 h-7 bg-gray-200 rounded-lg" /><div className="space-y-1"><div className="w-20 h-3 bg-gray-200 rounded" /><div className="w-12 h-2 bg-gray-200 rounded" /></div></div></td>
+    <td className="py-2 px-2"><div className="space-y-1"><div className="w-16 h-3 bg-gray-200 rounded" /><div className="w-20 h-2 bg-gray-200 rounded" /></div></td>
+    <td className="py-2 px-2"><div className="space-y-1"><div className="w-14 h-3 bg-gray-200 rounded" /><div className="w-10 h-2 bg-gray-200 rounded" /></div></td>
+    <td className="py-2 px-2"><div className="w-12 h-3 bg-gray-200 rounded" /></td>
+    <td className="py-2 px-2"><div className="w-16 h-5 bg-gray-200 rounded-full" /></td>
+    <td className="py-2 px-2"><div className="flex gap-1"><div className="w-7 h-7 bg-gray-200 rounded-lg" /><div className="w-7 h-7 bg-gray-200 rounded-lg" /><div className="w-7 h-7 bg-gray-200 rounded-lg" /></div></td>
+  </tr>
+)
 
 export default function OrdersPage() {
   const router = useRouter()
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
-  const [error, setError] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
@@ -35,10 +102,8 @@ export default function OrdersPage() {
       }
 
       setOrders(filteredOrders)
-      setError(null)
     } catch (error) {
       console.error('خطأ في تحميل الطلبات:', error)
-      setError('فشل تحميل الطلبات')
       toast.error('فشل تحميل الطلبات')
       setOrders([])
     } finally {
@@ -70,118 +135,123 @@ export default function OrdersPage() {
     }
   }
 
-  const getStatusConfig = (status) => {
-    switch (status) {
-      case 'قيد الانتظار':
-        return { text: 'قيد الانتظار', color: 'bg-amber-100 text-amber-800', icon: '⏳', badge: 'bg-amber-500' }
-      case 'قيد التوصيل':
-        return { text: 'قيد التوصيل', color: 'bg-blue-100 text-blue-800', icon: '🚚', badge: 'bg-blue-500' }
-      case 'تم التوصيل':
-        return { text: 'تم التوصيل', color: 'bg-emerald-100 text-emerald-800', icon: '✅', badge: 'bg-emerald-500' }
-      default:
-        return { text: status || 'غير معروف', color: 'bg-gray-100 text-gray-800', icon: '❓', badge: 'bg-gray-500' }
-    }
-  }
+  const filteredOrders = useMemo(() => {
+    return orders.filter(order => {
+      if (!order) return false
+      const term = searchTerm.toLowerCase()
+      return (
+        order.customerName?.toLowerCase().includes(term) ||
+        order.orderNumber?.includes(searchTerm) ||
+        order.customerPhone?.includes(searchTerm)
+      )
+    })
+  }, [orders, searchTerm])
 
-  const filteredOrders = orders.filter(order => {
-    if (!order) return false
-    const term = searchTerm.toLowerCase()
-    return (
-      order.customerName?.toLowerCase().includes(term) ||
-      order.orderNumber?.includes(searchTerm) ||
-      order.customerPhone?.includes(searchTerm)
-    )
-  })
-
-  const stats = {
+  const stats = useMemo(() => ({
     total: orders.length,
     amount: orders.reduce((sum, o) => sum + (o?.totalAmount || 0), 0),
     today: orders.filter(o => {
       if (!o?.createdAt) return false
       return new Date(o.createdAt).toDateString() === new Date().toDateString()
     }).length
+  }), [orders])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 overflow-x-hidden p-2 md:p-4" dir="rtl">
+        <div className="max-w-7xl mx-auto">
+          <div className="bg-white/80 rounded-lg border border-gray-200 p-3 mb-3 h-16 animate-pulse" />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
+            {[1,2,3].map(i => <div key={i} className="bg-white rounded-lg border border-gray-200 p-3 h-16 animate-pulse" />)}
+          </div>
+          <div className="bg-white rounded-lg border border-gray-200 p-3 mb-3 h-24 animate-pulse" />
+          <div className="space-y-2">
+            {[1,2,3,4,5].map(i => <SkeletonCard key={i} />)}
+          </div>
+        </div>
+      </div>
+    )
   }
 
-  if (loading) return <LoadingSpinner message="جاري تحميل الطلبات..." />
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white p-3 md:p-6" dir="rtl">
-      <div className="max-w-7xl mx-auto">
-        {/* الهيدر – زر الطلب الجديد يأخذ العرض الكامل في الموبايل */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-l from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              الطلبات
-            </h1>
-            <p className="text-gray-500 text-sm mt-1">إدارة ومتابعة الطلبات</p>
-          </div>
-          <Link
-            href="/orders/new"
-            className="w-full sm:w-auto inline-flex items-center justify-center px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-medium shadow-lg shadow-blue-500/30 hover:shadow-xl transition-all active:scale-[0.98] min-h-[48px]"
-          >
-            <span className="ml-2 text-lg">✨</span>
-            طلب جديد
-          </Link>
-        </div>
-
-        {/* بطاقات الإحصائيات */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 text-lg shadow-inner">📊</div>
-              <div>
-                <p className="text-xs text-gray-500">إجمالي الطلبات</p>
-                <p className="text-xl font-bold text-gray-900">{stats.total}</p>
-              </div>
+    <div className="min-h-screen bg-gray-50 overflow-x-hidden" dir="rtl">
+      <div className="max-w-7xl mx-auto p-2 md:p-4">
+        {/* Başlık ve butonlar */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-lg border border-gray-200 p-3 mb-3 shadow-sm">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <div>
+              <h1 className="text-xl md:text-2xl font-bold text-gray-800">الطلبات</h1>
+              <p className="text-xs text-gray-500">إدارة ومتابعة الطلبات</p>
             </div>
-          </div>
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600 text-lg shadow-inner">💰</div>
-              <div>
-                <p className="text-xs text-gray-500">إجمالي المبلغ</p>
-                <p className="text-xl font-bold text-gray-900">{stats.amount.toFixed(2)} ر.س</p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center text-purple-600 text-lg shadow-inner">📅</div>
-              <div>
-                <p className="text-xs text-gray-500">طلبات اليوم</p>
-                <p className="text-xl font-bold text-gray-900">{stats.today}</p>
-              </div>
-            </div>
+            <Link
+              href="/orders/new"
+              className="w-full sm:w-auto px-3 py-2 bg-blue-500 text-white rounded-lg text-xs font-medium flex items-center justify-center gap-1"
+            >
+              <span>✨</span> طلب جديد
+            </Link>
           </div>
         </div>
 
-        {/* البحث والتصفية */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-6 shadow-sm">
-          <div className="flex flex-col md:flex-row gap-3">
+        {/* İstatistik kartları */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
+          <div className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 text-sm">📊</div>
+              <div>
+                <p className="text-[10px] text-gray-500">إجمالي الطلبات</p>
+                <p className="text-base font-bold text-gray-900">{stats.total}</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600 text-sm">💰</div>
+              <div>
+                <p className="text-[10px] text-gray-500">إجمالي المبلغ</p>
+                <p className="text-base font-bold text-gray-900">{stats.amount.toFixed(2)} ل.س</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center text-purple-600 text-sm">📅</div>
+              <div>
+                <p className="text-[10px] text-gray-500">طلبات اليوم</p>
+                <p className="text-base font-bold text-gray-900">{stats.today}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Arama ve filtreler */}
+        <div className="bg-white rounded-lg border border-gray-200 p-3 mb-3 shadow-sm">
+          <div className="flex flex-col md:flex-row gap-2">
             <div className="flex-1 relative">
               <input
                 type="text"
-                className="w-full h-12 pr-11 pl-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-right text-base"
+                className="w-full h-9 pr-8 pl-8 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs"
                 placeholder="ابحث بالعميل، رقم الطلب أو الهاتف..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
-              <span className="absolute right-3.5 top-3.5 text-gray-400 text-lg">🔍</span>
+              <span className="absolute right-2.5 top-2.5 text-gray-400 text-xs">
+                <SearchIcon />
+              </span>
               {searchTerm && (
                 <button
                   onClick={() => setSearchTerm('')}
-                  className="absolute left-3 top-3.5 text-gray-400 hover:text-gray-600 text-lg w-8 h-8 flex items-center justify-center"
+                  className="absolute left-2 top-2 text-gray-400 w-5 h-5 flex items-center justify-center hover:bg-gray-100 rounded-full"
                 >
-                  ✕
+                  <ClearIcon />
                 </button>
               )}
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-1">
               <button
                 onClick={() => setFilter('all')}
-                className={`px-4 h-12 rounded-xl font-medium transition-all text-sm min-w-[64px] ${
+                className={`px-2 h-8 rounded-lg text-xs font-medium ${
                   filter === 'all'
-                    ? 'bg-blue-500 text-white shadow-md shadow-blue-500/30'
+                    ? 'bg-blue-500 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -189,9 +259,9 @@ export default function OrdersPage() {
               </button>
               <button
                 onClick={() => setFilter('today')}
-                className={`px-4 h-12 rounded-xl font-medium transition-all text-sm min-w-[64px] ${
+                className={`px-2 h-8 rounded-lg text-xs font-medium ${
                   filter === 'today'
-                    ? 'bg-purple-500 text-white shadow-md shadow-purple-500/30'
+                    ? 'bg-purple-500 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -199,144 +269,219 @@ export default function OrdersPage() {
               </button>
             </div>
           </div>
-          <div className="flex flex-wrap gap-2 mt-3">
-            {['قيد الانتظار', 'قيد التوصيل', 'تم التوصيل'].map(status => {
-              const cfg = getStatusConfig(status)
-              return (
-                <button
-                  key={status}
-                  onClick={() => setFilter(status)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all text-sm ${
-                    filter === status
-                      ? `${cfg.badge} text-white shadow-sm`
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  <span className="ml-1">{cfg.icon}</span>
-                  {status}
-                </button>
-              )
-            })}
+          <div className="flex flex-wrap gap-1 mt-2">
+            {['قيد الانتظار', 'قيد التوصيل', 'تم التوصيل'].map(status => (
+              <button
+                key={status}
+                onClick={() => setFilter(status)}
+                className={`px-2 py-1 rounded-lg text-[10px] font-medium ${
+                  filter === status
+                    ? 'bg-gray-800 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {status}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* جدول الطلبات مع إمكانية التمرير الأفقي فقط للجدول */}
-        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
-          <div className="p-4 border-b border-gray-100 flex justify-between items-center">
-            <h2 className="font-semibold text-gray-900">الطلبات ({filteredOrders.length})</h2>
-            <span className="text-sm text-gray-500">{format(new Date(), 'dd MMMM yyyy', { locale: ar })}</span>
+        {/* Mobil Kartlar */}
+<div className="block md:hidden">
+  {filteredOrders.length === 0 ? (
+    <div className="text-center py-8 bg-white rounded-lg border border-gray-200">
+      <div className="w-12 h-12 mx-auto bg-gray-100 rounded-lg flex items-center justify-center text-2xl mb-2">📦</div>
+      <p className="text-gray-500 text-xs mb-3">
+        {searchTerm ? 'لا توجد نتائج' : filter === 'today' ? 'لا توجد طلبات اليوم' : 'لا توجد طلبات'}
+      </p>
+      {!searchTerm && filter !== 'today' && (
+        <Link
+          href="/orders/new"
+          className="inline-block px-3 py-1.5 bg-blue-500 text-white rounded-lg text-xs"
+        >
+          إنشاء أول طلب
+        </Link>
+      )}
+    </div>
+  ) : (
+    <div className="space-y-2">
+      {filteredOrders.map(order => (
+        <div key={order._id} className="bg-white rounded-lg border border-gray-200 p-2 text-[10px]">
+          {/* Üst satır: sipariş no, ürün sayısı, durum */}
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-1">
+              <div className="w-6 h-6 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 text-xs">
+                📦
+              </div>
+              <div>
+                <span className="font-medium text-gray-900 text-xs">#{order.orderNumber || order._id?.slice(-8)}</span>
+                <span className="text-gray-500 mr-1">({order.items?.length || 0})</span>
+              </div>
+            </div>
+            <StatusBadge status={order.status} />
           </div>
 
-          {filteredOrders.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="w-20 h-20 mx-auto bg-gray-100 rounded-2xl flex items-center justify-center text-3xl mb-4">📦</div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                {searchTerm ? 'لا توجد نتائج' : filter === 'today' ? 'لا توجد طلبات اليوم' : 'لا توجد طلبات'}
-              </h3>
-              <p className="text-gray-500 text-sm max-w-xs mx-auto">
-                {searchTerm ? 'حاول بكلمات بحث مختلفة' : filter === 'today' ? 'لم يتم إنشاء أي طلبات اليوم' : 'ابدأ بإنشاء طلب جديد'}
-              </p>
-              {!searchTerm && filter !== 'today' && (
-                <Link
-                  href="/orders/new"
-                  className="mt-6 inline-block px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-medium shadow-lg shadow-blue-500/30 min-h-[48px]"
-                >
-                  ✨ إنشاء أول طلب
-                </Link>
-              )}
+          {/* Müşteri bilgileri */}
+          <div className="flex items-center justify-between mb-1">
+            <span className="font-medium text-gray-900 truncate max-w-[120px]">{order.customerName || 'عميل'}</span>
+            {order.customerPhone && <span className="text-gray-500 ltr" dir="ltr">{order.customerPhone}</span>}
+          </div>
+
+          {/* Tarih, saat, tutar */}
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-gray-600">
+              {order.createdAt ? (
+                <>
+                  <span>{format(new Date(order.createdAt), 'dd/MM')}</span>
+                  <span className="mx-1">·</span>
+                  <span>{format(new Date(order.createdAt), 'HH:mm')}</span>
+                </>
+              ) : '-'}
             </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[800px]">
-                <thead>
-                  <tr className="border-b border-gray-100 bg-gray-50/50">
-                    <th className="text-right py-4 px-4 text-sm font-medium text-gray-500 whitespace-nowrap">الطلب</th>
-                    <th className="text-right py-4 px-4 text-sm font-medium text-gray-500 whitespace-nowrap">العميل</th>
-                    <th className="text-right py-4 px-4 text-sm font-medium text-gray-500 whitespace-nowrap">التاريخ</th>
-                    <th className="text-right py-4 px-4 text-sm font-medium text-gray-500 whitespace-nowrap">المبلغ</th>
-                    <th className="text-right py-4 px-4 text-sm font-medium text-gray-500 whitespace-nowrap">الحالة</th>
-                    <th className="text-right py-4 px-4 text-sm font-medium text-gray-500 whitespace-nowrap">الإجراءات</th>
+            <span className="font-bold text-gray-900">{(order.totalAmount || 0).toFixed(0)} ل.س</span>
+          </div>
+
+          {/* Durum değiştirme ve işlemler */}
+          <div className="flex items-center justify-between">
+            <select
+              value={order.status}
+              onChange={(e) => handleStatusChange(order._id, e.target.value)}
+              className="text-[9px] bg-gray-50 border border-gray-200 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              <option value="قيد الانتظار">قيد الانتظار</option>
+              <option value="قيد التوصيل">قيد التوصيل</option>
+              <option value="تم التوصيل">تم التوصيل</option>
+            </select>
+            <div className="flex gap-1">
+              <button
+                onClick={() => router.push(`/orders/${order._id}`)}
+                className="w-6 h-6 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 flex items-center justify-center text-xs"
+                title="عرض"
+              >
+                <ViewIcon />
+              </button>
+              <button
+                onClick={() => router.push(`/orders/${order._id}/edit`)}
+                className="w-6 h-6 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-600 flex items-center justify-center text-xs"
+                title="تعديل"
+              >
+                <EditIcon />
+              </button>
+              <button
+                onClick={() => handleDelete(order._id, order.orderNumber || order._id.slice(-8))}
+                className="w-6 h-6 rounded-lg bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center text-xs"
+                title="حذف"
+              >
+                <DeleteIcon />
+              </button>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
+
+        {/* Masaüstü Tablo */}
+        <div className="hidden md:block bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[800px] text-xs">
+              <thead className="bg-gray-50">
+                <tr className="border-b border-gray-200">
+                  <th className="text-right py-2 px-2 font-medium text-gray-600">الطلب</th>
+                  <th className="text-right py-2 px-2 font-medium text-gray-600">العميل</th>
+                  <th className="text-right py-2 px-2 font-medium text-gray-600">التاريخ</th>
+                  <th className="text-right py-2 px-2 font-medium text-gray-600">المبلغ</th>
+                  <th className="text-right py-2 px-2 font-medium text-gray-600">الحالة</th>
+                  <th className="text-right py-2 px-2 font-medium text-gray-600"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredOrders.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" className="py-8 text-center">
+                      <div className="w-12 h-12 mx-auto bg-gray-100 rounded-lg flex items-center justify-center text-2xl mb-2">📦</div>
+                      <p className="text-gray-500 text-xs mb-3">
+                        {searchTerm ? 'لا توجد نتائج' : filter === 'today' ? 'لا توجد طلبات اليوم' : 'لا توجد طلبات'}
+                      </p>
+                      {!searchTerm && filter !== 'today' && (
+                        <Link
+                          href="/orders/new"
+                          className="inline-block px-3 py-1.5 bg-blue-500 text-white rounded-lg text-xs"
+                        >
+                          إنشاء أول طلب
+                        </Link>
+                      )}
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {filteredOrders.map(order => {
-                    const status = getStatusConfig(order.status)
-                    return (
-                      <tr key={order._id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                        <td className="py-4 px-4">
-                          <div className="flex items-center gap-3 whitespace-nowrap">
-                            <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 flex-shrink-0 shadow-inner">
-                              📦
-                            </div>
-                            <div>
-                              <p className="font-medium text-gray-900">#{order.orderNumber || order._id?.slice(-8)}</p>
-                              <p className="text-xs text-gray-500">{order.items?.length || 0} منتج</p>
-                            </div>
+                ) : (
+                  filteredOrders.map(order => (
+                    <tr key={order._id} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="py-2 px-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 text-sm flex-shrink-0">
+                            📦
                           </div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <div className="whitespace-nowrap">
-                            <p className="font-medium text-gray-900">{order.customerName || 'عميل'}</p>
-                            {order.customerPhone && <p className="text-xs text-gray-500">{order.customerPhone}</p>}
+                          <div>
+                            <p className="font-medium text-gray-900">#{order.orderNumber || order._id?.slice(-8)}</p>
+                            <p className="text-[10px] text-gray-500">{order.items?.length || 0} منتج</p>
                           </div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <div className="whitespace-nowrap">
-                            <p className="text-sm text-gray-900">{order.createdAt ? format(new Date(order.createdAt), 'dd/MM/yyyy') : '-'}</p>
-                            <p className="text-xs text-gray-500">{order.createdAt ? format(new Date(order.createdAt), 'HH:mm') : ''}</p>
-                          </div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <p className="font-bold text-gray-900 whitespace-nowrap">{(order.totalAmount || 0).toFixed(2)} ر.س</p>
-                        </td>
-                        <td className="py-4 px-4">
-                          <div className="space-y-2 whitespace-nowrap">
-                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${status.color}`}>
-                              {status.icon} {status.text}
-                            </span>
-                            <select
-                              value={order.status}
-                              onChange={(e) => handleStatusChange(order._id, e.target.value)}
-                              className="w-full text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500 min-h-[44px]"
-                            >
-                              <option value="قيد الانتظار">قيد الانتظار</option>
-                              <option value="قيد التوصيل">قيد التوصيل</option>
-                              <option value="تم التوصيل">تم التوصيل</option>
-                            </select>
-                          </div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <div className="flex items-center gap-2 whitespace-nowrap">
-                            <button
-                              onClick={() => router.push(`/orders/${order._id}`)}
-                              className="w-10 h-10 rounded-lg bg-blue-100 hover:bg-blue-200 flex items-center justify-center text-blue-600 transition-colors flex-shrink-0 shadow-sm"
-                              title="عرض"
-                            >
-                              👁️
-                            </button>
-                            <button
-                              onClick={() => router.push(`/orders/${order._id}/edit`)}
-                              className="w-10 h-10 rounded-lg bg-amber-100 hover:bg-amber-200 flex items-center justify-center text-amber-600 transition-colors flex-shrink-0 shadow-sm"
-                              title="تعديل"
-                            >
-                              ✏️
-                            </button>
-                            <button
-                              onClick={() => handleDelete(order._id, order.orderNumber || order._id.slice(-8))}
-                              className="w-10 h-10 rounded-lg bg-red-100 hover:bg-red-200 flex items-center justify-center text-red-600 transition-colors flex-shrink-0 shadow-sm"
-                              title="حذف"
-                            >
-                              🗑️
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
+                        </div>
+                      </td>
+                      <td className="py-2 px-2">
+                        <p className="font-medium text-gray-900">{order.customerName || 'عميل'}</p>
+                        {order.customerPhone && <p className="text-[10px] text-gray-500">{order.customerPhone}</p>}
+                      </td>
+                      <td className="py-2 px-2">
+                        <p className="text-gray-900">{order.createdAt ? format(new Date(order.createdAt), 'dd/MM/yyyy') : '-'}</p>
+                        <p className="text-[10px] text-gray-500">{order.createdAt ? format(new Date(order.createdAt), 'HH:mm') : ''}</p>
+                      </td>
+                      <td className="py-2 px-2 font-bold">{(order.totalAmount || 0).toFixed(2)} ل.س</td>
+                      <td className="py-2 px-2">
+                        <div className="flex items-center gap-2">
+                          <StatusBadge status={order.status} />
+                          <select
+                            value={order.status}
+                            onChange={(e) => handleStatusChange(order._id, e.target.value)}
+                            className="text-[10px] bg-gray-50 border border-gray-200 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          >
+                            <option value="قيد الانتظار">قيد الانتظار</option>
+                            <option value="قيد التوصيل">قيد التوصيل</option>
+                            <option value="تم التوصيل">تم التوصيل</option>
+                          </select>
+                        </div>
+                      </td>
+                      <td className="py-2 px-2">
+                        <div className="flex gap-1">
+                          <button
+                            onClick={() => router.push(`/orders/${order._id}`)}
+                            className="w-7 h-7 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 flex items-center justify-center text-xs"
+                            title="عرض"
+                          >
+                            <ViewIcon />
+                          </button>
+                          <button
+                            onClick={() => router.push(`/orders/${order._id}/edit`)}
+                            className="w-7 h-7 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-600 flex items-center justify-center text-xs"
+                            title="تعديل"
+                          >
+                            <EditIcon />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(order._id, order.orderNumber || order._id.slice(-8))}
+                            className="w-7 h-7 rounded-lg bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center text-xs"
+                            title="حذف"
+                          >
+                            <DeleteIcon />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

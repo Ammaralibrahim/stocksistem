@@ -209,7 +209,7 @@ export default function CartPage() {
                 <div>
                   <p className="text-sm text-gray-600">القيمة الإجمالية</p>
                   <p className="text-2xl font-bold text-gray-900 mt-1">
-                    {(cart?.totalValue || 0).toFixed(2)} ر.س
+                    {(cart?.totalValue || 0).toFixed(2)} ل.س
                   </p>
                 </div>
                 <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
@@ -337,12 +337,12 @@ export default function CartPage() {
                               <td className="py-4 px-4">
                                 <div className="text-right">
                                   <p className="text-lg font-bold text-gray-900">{item.quantity} وحدة</p>
-                                  <p className="text-sm text-gray-600">{(item.price || 0).toFixed(2)} ر.س للوحدة</p>
+                                  <p className="text-sm text-gray-600">{(item.price || 0).toFixed(2)} ل.س للوحدة</p>
                                 </div>
                               </td>
                               <td className="py-4 px-4">
                                 <p className="text-lg font-bold text-gray-900 text-right">
-                                  {(item.quantity * item.price).toFixed(2)} ر.س
+                                  {(item.quantity * item.price).toFixed(2)} ل.س
                                 </p>
                               </td>
                               <td className="py-4 px-4">

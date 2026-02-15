@@ -206,7 +206,7 @@ export default function LoadToCartPage() {
                           <div className="flex items-center justify-between mt-2 flex-row-reverse">
                             <div className="text-right">
                               <p className="text-lg font-bold text-gray-900">
-                                {(drug.price || 0).toFixed(2)} ر.س
+                                {(drug.price || 0).toFixed(2)} ل.س
                               </p>
                               <div className="flex items-center space-x-2 space-x-reverse mt-1">
                                 <span className="text-sm text-gray-600">
@@ -396,7 +396,7 @@ export default function LoadToCartPage() {
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">القيمة الإجمالية</span>
-                      <span className="font-medium">{(cart.totalValue || 0).toFixed(2)} ر.س</span>
+                      <span className="font-medium">{(cart.totalValue || 0).toFixed(2)} ل.س</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">الحالة</span>

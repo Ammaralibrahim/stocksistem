@@ -251,7 +251,7 @@ export default function CartSalePage() {
                             <div className="flex items-center justify-between mt-2 flex-row-reverse">
                               <div className="text-right">
                                 <p className="text-lg font-bold text-gray-900">
-                                  {(item.price || 0).toFixed(2)} ر.س
+                                  {(item.price || 0).toFixed(2)} ل.س
                                 </p>
                                 <p className="text-sm text-gray-600">
                                   في العربة: <span className="font-medium">{availableQuantity} وحدة</span>
@@ -364,9 +364,9 @@ export default function CartSalePage() {
                               </div>
                               <div className="text-left">
                                 <p className="font-medium text-gray-900">
-                                  {(item.quantity * item.price).toFixed(2)} ر.س
+                                  {(item.quantity * item.price).toFixed(2)} ل.س
                                 </p>
-                                <p className="text-xs text-gray-500">الوحدة: {item.price.toFixed(2)} ر.س</p>
+                                <p className="text-xs text-gray-500">الوحدة: {item.price.toFixed(2)} ل.س</p>
                               </div>
                             </div>
                             {item.quantity > availableQuantity && (
@@ -393,7 +393,7 @@ export default function CartSalePage() {
                     <div className="flex justify-between items-center text-lg flex-row-reverse">
                       <span className="font-semibold text-gray-900">الإجمالي</span>
                       <span className="text-2xl font-bold text-purple-600">
-                        {calculateTotal().toFixed(2)} ر.س
+                        {calculateTotal().toFixed(2)} ل.س
                       </span>
                     </div>
                   </div>

@@ -45,7 +45,7 @@ export default function DrugCard({ drug }) {
       <div className="grid grid-cols-3 gap-2 md:gap-3 border-t border-gray-100 pt-3 md:pt-4">
         <div className="text-center">
           <p className="text-xs text-gray-500">السعر</p>
-          <p className="text-sm md:text-lg font-bold text-gray-900">{drug?.price ? `${drug.price} ر.س` : '—'}</p>
+          <p className="text-sm md:text-lg font-bold text-gray-900">{drug?.price ? `${drug.price} ل.س` : '—'}</p>
         </div>
         <div className="text-center">
           <p className="text-xs text-gray-500">المخزون</p>
