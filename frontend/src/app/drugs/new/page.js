@@ -97,7 +97,7 @@ export default function NewDrugPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">سعر البيع *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">السعر *</label>
                 <input
                   name="price"
                   type="number"
