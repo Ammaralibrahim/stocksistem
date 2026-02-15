@@ -43,17 +43,29 @@ export default function NewDrugPage() {
 
     setLoading(true)
     try {
-      await api.post('/drugs', {
+      // payload hazırla – boş string'leri undefined yap
+      const payload = {
         ...formData,
         stock: parseInt(formData.stock),
         price: parseFloat(formData.price),
         purchasePrice: formData.purchasePrice ? parseFloat(formData.purchasePrice) : undefined,
         lowStockThreshold: parseInt(formData.lowStockThreshold) || 10,
-        expiryDate: new Date(formData.expiryDate)
-      })
+        expiryDate: new Date(formData.expiryDate),
+        // opsiyonel alanlar – boş string yerine undefined
+        barcode: formData.barcode || undefined,
+        serialNumber: formData.serialNumber || undefined,
+        category: formData.category || undefined,
+        manufacturer: formData.manufacturer || undefined,
+        supplier: formData.supplier || undefined,
+        location: formData.location || undefined,
+        description: formData.description || undefined
+      }
+
+      await api.post('/drugs', payload)
       toast.success('تم إضافة الدواء')
       router.push('/drugs')
     } catch (err) {
+      console.error(err)
       toast.error('فشل الإضافة')
     } finally {
       setLoading(false)
