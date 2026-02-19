@@ -2,7 +2,10 @@
 
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { logout, getUser } from '@/lib/auth'
+import toast from 'react-hot-toast'
 
 const navigation = [
   { name: 'لوحة التحكم', href: '/', icon: '📊', desc: 'الإحصائيات العامة' },
@@ -15,16 +18,28 @@ const navigation = [
 
 export default function Sidebar() {
   const pathname = usePathname()
+  const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
+  const [user, setUser] = useState(null)
+
+  useEffect(() => {
+    setUser(getUser())
+  }, [])
+
+  const handleLogout = () => {
+    logout()
+    toast.success('تم تسجيل الخروج')
+    router.push('/login')
+  }
 
   if (pathname === '/login') return null
 
   return (
     <>
-      {/* Mobile toggle */}
+      {/* Mobile toggle - تم رفعه للأعلى */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-white shadow-lg border border-gray-200"
+        className="md:hidden fixed top-2 left-4 z-50 p-2 rounded-lg bg-white shadow-lg border border-gray-200"
         aria-label="Toggle sidebar"
       >
         <div className="w-6 h-5 flex flex-col justify-between">
@@ -82,6 +97,19 @@ export default function Sidebar() {
             })}
           </div>
         </nav>
+
+        {/* زر logout في الشريط الجانبي - أيقونة فقط */}
+        {user && (
+          <div className="p-3 md:p-4 border-t border-gray-100">
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center justify-center p-3 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors"
+              title="تسجيل الخروج"
+            >
+              <span className="text-xl">🚪</span>
+            </button>
+          </div>
+        )}
 
         <div className="p-3 md:p-4 border-t border-gray-100">
           <p className="text-xs text-gray-500 text-center">الإصدار 1.0</p>

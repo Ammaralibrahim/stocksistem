@@ -1,25 +1,17 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { logout, getUser } from '@/lib/auth'
-import toast from 'react-hot-toast'
+import { getUser } from '@/lib/auth'
 
 export default function Header() {
-  const router = useRouter()
   const pathname = usePathname()
   const [user, setUser] = useState(null)
 
   useEffect(() => {
     setUser(getUser())
   }, [])
-
-  const handleLogout = () => {
-    logout()
-    toast.success('تم تسجيل الخروج')
-    router.push('/login')
-  }
 
   if (pathname === '/login') return null
 
@@ -43,12 +35,7 @@ export default function Header() {
                 <p className="text-sm font-medium text-gray-900">{user.username}</p>
                 <p className="text-xs text-gray-600">مدير النظام</p>
               </div>
-              <button
-                onClick={handleLogout}
-                className="px-3 py-2 md:px-4 md:py-2 text-xs md:text-sm bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors min-h-[40px]"
-              >
-                تسجيل الخروج
-              </button>
+              {/* تمت إزالة زر logout من هنا */}
             </div>
           )}
         </div>
