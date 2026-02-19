@@ -16,6 +16,13 @@ const navigation = [
   { name: 'بحث', href: '/search', icon: '🔍', desc: 'بحث مفصل' },
 ]
 
+// أيقونة خروج SVG حديثة (من Heroicons)
+const LogoutIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className="w-5 h-5 md:w-5 md:h-5">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3-6l3 3m0 0l-3 3m3-3H9" />
+  </svg>
+)
+
 export default function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
@@ -25,6 +32,18 @@ export default function Sidebar() {
   useEffect(() => {
     setUser(getUser())
   }, [])
+
+  // منع تمرير الصفحة الرئيسية عند فتح الشريط الجانبي في الموبايل
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isOpen])
 
   const handleLogout = () => {
     logout()
@@ -36,7 +55,7 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Mobile toggle - تم رفعه للأعلى */}
+      {/* زر القائمة (البرغر) - تم رفعه للأعلى */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="md:hidden fixed top-2 left-4 z-50 p-2 rounded-lg bg-white shadow-lg border border-gray-200"
@@ -49,6 +68,7 @@ export default function Sidebar() {
         </div>
       </button>
 
+      {/* خلفية معتمة تغطي الشاشة عند فتح القائمة */}
       {isOpen && <div className="md:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-40" onClick={() => setIsOpen(false)} />}
 
       <aside className={`
@@ -95,22 +115,26 @@ export default function Sidebar() {
                 </Link>
               )
             })}
+
+            {/* زر تسجيل الخروج - يظهر فقط إذا كان المستخدم مسجلاً للدخول، ويأتي بعد "بحث" مباشرة */}
+            {user && (
+              <button
+                onClick={handleLogout}
+                className="w-full group flex items-center p-2 md:p-3 rounded-xl transition-all text-gray-700 hover:bg-gray-50"
+              >
+                <div className="w-8 h-8 md:w-9 md:h-9 rounded-lg flex items-center justify-center ml-2 md:ml-3 bg-gray-100 text-gray-600 group-hover:bg-blue-100 group-hover:text-blue-600 transition-all">
+                  <LogoutIcon />
+                </div>
+                <div className="flex-1 text-right">
+                  <p className="font-medium text-xs md:text-sm text-gray-900">تسجيل الخروج</p>
+                  <p className="text-xs text-gray-500 hidden md:block">إنهاء الجلسة</p>
+                </div>
+              </button>
+            )}
           </div>
         </nav>
 
-        {/* زر logout في الشريط الجانبي - أيقونة فقط */}
-        {user && (
-          <div className="p-3 md:p-4 border-t border-gray-100">
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center justify-center p-3 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors"
-              title="تسجيل الخروج"
-            >
-              <span className="text-xl">🚪</span>
-            </button>
-          </div>
-        )}
-
+        {/* رقم الإصدار يبقى في الأسفل */}
         <div className="p-3 md:p-4 border-t border-gray-100">
           <p className="text-xs text-gray-500 text-center">الإصدار 1.0</p>
         </div>
