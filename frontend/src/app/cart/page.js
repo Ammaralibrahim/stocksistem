@@ -3,8 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { format } from 'date-fns'
-import { ar } from 'date-fns/locale'
 import api from '@/lib/api'
 import toast from 'react-hot-toast'
 
@@ -80,15 +78,24 @@ export default function CartPage() {
   }
 
   const handleUnloadAll = async () => {
-    if (!cart?.items?.length) return
+    if (!cart) {
+      toast.error('العربة غير موجودة')
+      return
+    }
+    if (!cart.items?.length) {
+      toast.error('العربة فارغة بالفعل')
+      return
+    }
+
     if (!confirm('إعادة جميع المنتجات إلى المستودع؟')) return
+
     setUnloadAllLoading(true)
     try {
       await api.cart.unloadAll(cart._id, 'تفريغ يدوي')
-      toast.success('تم التفريغ')
-      fetchCart()
-    } catch {
-      toast.error('فشل التفريغ')
+      toast.success('تم التفريغ بنجاح')
+      await fetchCart() // Güncel veriyi al
+    } catch (error) {
+      toast.error(error.message || 'فشل التفريغ')
     } finally {
       setUnloadAllLoading(false)
     }
