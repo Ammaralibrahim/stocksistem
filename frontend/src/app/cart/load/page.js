@@ -6,7 +6,8 @@ import Link from 'next/link'
 import api from '@/lib/api'
 import toast from 'react-hot-toast'
 
-// Miktar giriş bileşeni
+// ==================== Alt Bileşenler ====================
+
 const QuantityInput = ({ value, onChange, max, disabled }) => (
   <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden h-9">
     <button
@@ -37,57 +38,103 @@ const QuantityInput = ({ value, onChange, max, disabled }) => (
   </div>
 )
 
-// Ürün kartı bileşeni
-const ProductCard = ({ drug, isSelected, onSelect, quantity, onQuantityChange, onLoad }) => (
-  <div
-    className={`border rounded-xl p-3 cursor-pointer transition-all ${
-      isSelected
-        ? 'border-blue-400 bg-blue-50 shadow-sm'
-        : 'border-gray-200 bg-white hover:border-blue-300 hover:shadow'
-    }`}
-    onClick={() => onSelect(drug)}
-  >
-    <div className="flex items-start gap-2">
-      <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-        isSelected ? 'bg-blue-200' : 'bg-gray-100'
-      }`}>
-        <span className={isSelected ? 'text-blue-600' : 'text-gray-600'}>💊</span>
-      </div>
-      <div className="flex-1 min-w-0">
-        <h4 className="font-medium text-gray-900 text-sm truncate">{drug.name}</h4>
-        <p className="text-xs text-gray-500 mt-0.5">{drug.price?.toFixed(2)} ل.س</p>
-        <div className="flex items-center gap-2 mt-1 text-xs">
-          <span className="text-gray-600">المخزون: {drug.stock}</span>
-          <span className="text-gray-600">العربة: {drug.cartStock || 0}</span>
-        </div>
-      </div>
-      {isSelected && (
-        <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
-          <span className="text-white text-xs">✓</span>
-        </div>
-      )}
-    </div>
+const ProductCard = ({ drug, onAddToCart }) => {
+  const [localQty, setLocalQty] = useState('1')
 
-    {isSelected && (
-      <div className="mt-3 flex items-center gap-2 border-t border-blue-200 pt-3">
+  const handleAdd = () => {
+    const qty = parseInt(localQty)
+    if (!qty || qty <= 0) {
+      toast.error('الرجاء إدخال كمية صالحة')
+      return
+    }
+    if (qty > drug.stock) {
+      toast.error(`الكمية المطلوبة (${qty}) أكبر من المخزون (${drug.stock})`)
+      return
+    }
+    onAddToCart(drug, qty)
+    setLocalQty('1') // ekledikten sonra sıfırla
+  }
+
+  return (
+    <div className="border border-gray-200 rounded-xl p-3 bg-white hover:shadow-md transition-shadow">
+      <div className="flex items-start gap-2">
+        <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+          <span className="text-blue-600">💊</span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <h4 className="font-medium text-gray-900 text-sm truncate">{drug.name}</h4>
+          <p className="text-xs text-gray-500 mt-0.5">{drug.price?.toFixed(2)} ل.س</p>
+          <div className="flex items-center gap-2 mt-1 text-xs">
+            <span className="text-gray-600">المخزون: {drug.stock}</span>
+            <span className="text-gray-600">العربة: {drug.cartStock || 0}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-3 flex items-center gap-2 border-t border-gray-100 pt-3">
         <QuantityInput
-          value={quantity}
-          onChange={(val) => onQuantityChange(val)}
+          value={localQty}
+          onChange={setLocalQty}
           max={drug.stock}
         />
         <button
-          onClick={(e) => { e.stopPropagation(); onLoad(); }}
-          disabled={!quantity || parseInt(quantity) <= 0 || parseInt(quantity) > drug.stock}
-          className="flex-1 h-9 bg-blue-500 text-white rounded-lg text-sm font-medium disabled:bg-gray-200 disabled:text-gray-500"
+          onClick={handleAdd}
+          disabled={!localQty || parseInt(localQty) <= 0 || parseInt(localQty) > drug.stock}
+          className="flex-1 h-9 bg-emerald-500 text-white rounded-lg text-sm font-medium hover:bg-emerald-600 disabled:bg-gray-200 disabled:text-gray-500 transition-colors"
         >
-          تحميل
+          + إضافة إلى السلة
         </button>
       </div>
-    )}
-  </div>
-)
+    </div>
+  )
+}
 
-// Skeleton yüklenirken
+const CartItem = ({ item, onIncrease, onDecrease, onRemove }) => {
+  const drug = item.drug
+  const maxAvailable = drug.stock + item.quantity // sepetteki miktar zaten ayrılmadı, stoktan düşmedi, bu yüzden maksimum stok + sepetteki? Hayır, stok fiziksel stok. Sepetteki ürünler henüz arabaya yüklenmedi, dolayısıyla stoktan düşülmedi. Maksimum, stok miktarıdır. Yani sepette zaten 5 varsa, stok 10 ise, toplamda 15 eklenemez, sadece stok kadar eklenebilir. Bu nedenle max = drug.stock (kalan stok) + item.quantity (sepetteki) olmalı ki toplamda stok aşılmasın. Ancak kullanıcı sepette miktarı artırdığında, aslında stoktan fazla talep etmemeli. Stok = 10, sepette 5 varsa, 5 daha eklenebilir (toplam 10). Yani max = drug.stock + item.quantity. Bu biraz kafa karıştırıcı. Daha basit: Kullanıcı sepette miktarı değiştirdiğinde, girilen değerin stoku aşmamasını kontrol edeceğiz. O yüzden input'un max'ı drug.stock + item.quantity olmalı. Ancak bu matematiksel olarak doğru. Uygulamada, sepetteki ürünler stoktan düşülmediği için, stok miktarı sabit kalır. Dolayısıyla toplam talep stoku geçmemeli: item.quantity (yeni) <= drug.stock + (eski item.quantity? hayır, eskiyi saymıyoruz, çünkü eski de stoktan talep edilecek). Aslında talep edilen toplam miktar = sepetteki tüm ürünlerin miktarı + yeni eklenecek. Ama biz her ürün için ayrı ayrı kontrol ediyoruz. En kolayı: Her ürün için max = drug.stock (kalan stok) + item.quantity. Yani eğer stok 10, sepette 3 varsa, kullanıcı en fazla 13 girebilir (3+10). Bu mantıklı çünkü stok 10, sepetteki 3 de stoktan gelecek, toplam 13. Ancak bu durumda stok aşımı olmaz. Evet, bu doğru. O halde max = drug.stock + item.quantity.
+  const maxQty = drug.stock + item.quantity
+
+  const handleQtyChange = (newQty) => {
+    const qty = parseInt(newQty)
+    if (isNaN(qty) || qty < 1) {
+      onRemove(drug._id)
+      return
+    }
+    if (qty > maxQty) {
+      toast.error(`الحد الأقصى ${maxQty}`)
+      return
+    }
+    onIncrease(drug._id, qty) // aslında doğrudan miktarı set et
+  }
+
+  return (
+    <div className="flex items-center justify-between p-2 bg-purple-50 rounded-lg">
+      <div className="flex-1 min-w-0">
+        <p className="font-medium text-gray-900 text-xs truncate">{drug.name}</p>
+        <div className="flex items-center gap-1 mt-1">
+          <button
+            onClick={() => handleQtyChange(item.quantity - 1)}
+            className="w-6 h-6 bg-white border border-purple-300 rounded text-sm"
+          >
+            -
+          </button>
+          <span className="w-5 text-center text-xs">{item.quantity}</span>
+          <button
+            onClick={() => handleQtyChange(item.quantity + 1)}
+            className="w-6 h-6 bg-white border border-purple-300 rounded text-sm"
+          >
+            +
+          </button>
+        </div>
+      </div>
+      <div className="text-left mr-2">
+        <p className="font-bold text-gray-900 text-xs">{(item.quantity * item.price).toFixed(2)}</p>
+        <button onClick={() => onRemove(drug._id)} className="text-red-500 text-xs">✕</button>
+      </div>
+    </div>
+  )
+}
+
 const LoadSkeleton = () => (
   <div className="space-y-4 animate-pulse">
     <div className="h-7 w-40 bg-gray-200 rounded-lg mb-6" />
@@ -124,15 +171,15 @@ const LoadSkeleton = () => (
   </div>
 )
 
+// ==================== Ana Sayfa ====================
+
 export default function LoadToCartPage() {
   const router = useRouter()
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false) // yükleme işlemi için
   const [drugs, setDrugs] = useState([])
   const [cart, setCart] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedDrug, setSelectedDrug] = useState(null)
-  const [quantity, setQuantity] = useState('1')
-  // const [barcode, setBarcode] = useState('')   // 👈 معلق مؤقتًا
+  const [cartItems, setCartItems] = useState([]) // sepetteki ürünler { drug, quantity, price }
   const [pageLoading, setPageLoading] = useState(true)
 
   useEffect(() => {
@@ -155,60 +202,83 @@ export default function LoadToCartPage() {
     }
   }
 
-  const handleLoad = useCallback(async () => {
-    if (!selectedDrug || !quantity || parseInt(quantity) <= 0) {
-      toast.error('الرجاء اختيار منتج وكمية صالحة')
-      return
-    }
+  // Sepete ürün ekle (miktar belirtilerek)
+  const addToCart = (drug, quantity) => {
+    setCartItems(prev => {
+      const existing = prev.find(item => item.drug._id === drug._id)
+      if (existing) {
+        // Miktar kontrolü: yeni miktar stok + eski miktarı aşmamalı (yukarıdaki mantık)
+        const newQty = existing.quantity + quantity
+        if (newQty > drug.stock + existing.quantity) {
+          toast.error(`لا يمكن إضافة ${quantity} وحدات. الحد الأقصى ${drug.stock + existing.quantity}`)
+          return prev
+        }
+        return prev.map(item =>
+          item.drug._id === drug._id
+            ? { ...item, quantity: newQty }
+            : item
+        )
+      } else {
+        if (quantity > drug.stock) {
+          toast.error(`الكمية المطلوبة (${quantity}) أكبر من المخزون (${drug.stock})`)
+          return prev
+        }
+        return [...prev, { drug, quantity, price: drug.price }]
+      }
+    })
+    toast.success(`تمت إضافة ${quantity} وحدة من ${drug.name} إلى السلة`, { icon: '🛒' })
+  }
 
-    const qty = parseInt(quantity)
-    if (selectedDrug.stock < qty) {
-      toast.error(`كمية غير كافية في المخزون. المتاحة: ${selectedDrug.stock}`)
+  // Sepetteki ürün miktarını güncelle (doğrudan set)
+  const updateCartItem = (drugId, newQuantity) => {
+    setCartItems(prev =>
+      prev.map(item =>
+        item.drug._id === drugId
+          ? { ...item, quantity: newQuantity }
+          : item
+      )
+    )
+  }
+
+  // Sepetten ürün çıkar
+  const removeFromCart = (drugId) => {
+    setCartItems(prev => prev.filter(item => item.drug._id !== drugId))
+    toast.success('تمت إزالة المنتج من السلة', { icon: '🗑️' })
+  }
+
+  // Sepetteki tüm ürünleri arabaya yükle
+  const handleLoadAll = async () => {
+    if (cartItems.length === 0) {
+      toast.error('السلة فارغة')
       return
     }
 
     setLoading(true)
+    const toastId = toast.loading('جاري التحميل إلى العربة...')
+
     try {
-      await api.cart.loadToCart(selectedDrug._id, qty, cart?._id)
-      toast.success(`${qty} وحدة من ${selectedDrug.name} تم تحميلها إلى العربة!`)
-      setSelectedDrug(null)
-      setQuantity('1')
-      // setBarcode('')
-      fetchData()
+      // Her ürün için API isteği (paralel)
+      const promises = cartItems.map(item =>
+        api.cart.loadToCart(item.drug._id, item.quantity, cart?._id)
+      )
+      await Promise.all(promises)
+
+      toast.success('تم تحميل جميع المنتجات إلى العربة بنجاح!', { id: toastId })
+      setCartItems([]) // sepeti boşalt
+      fetchData() // güncel stokları ve arabayı getir
     } catch (error) {
       console.error('خطأ في التحميل:', error)
-      toast.error(error.message || 'فشل التحميل')
+      toast.error(error.message || 'فشل تحميل بعض المنتجات', { id: toastId })
     } finally {
       setLoading(false)
     }
-  }, [selectedDrug, quantity, cart])
+  }
 
-  // const handleBarcodeLoad = useCallback(async () => {
-  //   if (!barcode || !quantity || parseInt(quantity) <= 0) {
-  //     toast.error('الرجاء إدخال الباركود والكمية')
-  //     return
-  //   }
-
-  //   setLoading(true)
-  //   try {
-  //     await api.cart.loadByBarcode(barcode, parseInt(quantity))
-  //     toast.success(`${quantity} وحدة تم تحميلها بالباركود!`)
-  //     setBarcode('')
-  //     setQuantity('1')
-  //     setSelectedDrug(null)
-  //     fetchData()
-  //   } catch (error) {
-  //     console.error('خطأ في تحميل الباركود:', error)
-  //     toast.error(error.message || 'فشل تحميل الباركود')
-  //   } finally {
-  //     setLoading(false)
-  //   }
-  // }, [barcode, quantity])
-
+  // Filtrelenmiş ürünler (stok > 0)
   const filteredDrugs = useMemo(() => {
     if (!searchTerm.trim()) return drugs.filter(d => (d.stock || 0) > 0)
     const lower = searchTerm.toLowerCase()
-    return drugs.filter(d => 
+    return drugs.filter(d =>
       (d.stock || 0) > 0 && (
         d.name?.toLowerCase().includes(lower) ||
         d.barcode?.includes(searchTerm) ||
@@ -217,15 +287,22 @@ export default function LoadToCartPage() {
     )
   }, [drugs, searchTerm])
 
+  // Sepet özeti
+  const cartSummary = useMemo(() => {
+    const totalItems = cartItems.reduce((acc, item) => acc + item.quantity, 0)
+    const totalValue = cartItems.reduce((acc, item) => acc + item.quantity * item.price, 0)
+    return { totalItems, totalValue }
+  }, [cartItems])
+
   if (pageLoading) return <LoadSkeleton />
 
   return (
     <div className="min-h-screen bg-gray-50 p-3 md:p-4" dir="rtl">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         {/* Başlık */}
         <div className="mb-5 flex items-center gap-2">
-          <Link 
-            href="/cart" 
+          <Link
+            href="/cart"
             className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors"
           >
             <span className="text-lg">←</span>
@@ -262,14 +339,7 @@ export default function LoadToCartPage() {
                     <ProductCard
                       key={drug._id}
                       drug={drug}
-                      isSelected={selectedDrug?._id === drug._id}
-                      onSelect={(d) => {
-                        setSelectedDrug(d)
-                        setQuantity('1')
-                      }}
-                      quantity={selectedDrug?._id === drug._id ? quantity : '1'}
-                      onQuantityChange={(val) => setQuantity(val)}
-                      onLoad={handleLoad}
+                      onAddToCart={addToCart}
                     />
                   ))
                 )}
@@ -277,37 +347,64 @@ export default function LoadToCartPage() {
             </div>
           </div>
 
-          {/* Sağ panel: Barcode ve araba bilgisi */}
+          {/* Sağ panel: Sepet ve araba bilgisi */}
           <div className="lg:col-span-1 space-y-4">
-            {/* التحميل بالباركود - معطل حالياً */}
-            {/* <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
-              <h3 className="font-semibold text-gray-900 mb-3 text-sm flex items-center gap-1">
-                <span>📷</span> التحميل بالباركود
-              </h3>
-              <div className="space-y-3">
-                <input
-                  type="text"
-                  className="w-full h-10 px-3 bg-white border border-emerald-200 rounded-lg text-sm"
-                  placeholder="أدخل الباركود"
-                  value={barcode}
-                  onChange={(e) => setBarcode(e.target.value)}
-                />
-                <div className="flex items-center gap-2">
-                  <QuantityInput
-                    value={quantity}
-                    onChange={(val) => setQuantity(val)}
-                    max={9999}
-                  />
+            {/* Sepet */}
+            <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-gray-900 text-sm">🛒 السلة ({cartSummary.totalItems})</h3>
+                {cartItems.length > 0 && (
                   <button
-                    onClick={handleBarcodeLoad}
-                    disabled={loading || !barcode || !quantity || parseInt(quantity) <= 0}
-                    className="flex-1 h-10 bg-emerald-500 text-white rounded-lg text-sm font-medium disabled:bg-gray-200 disabled:text-gray-500"
+                    onClick={() => setCartItems([])}
+                    className="text-xs text-red-600 hover:underline"
                   >
-                    تحميل
+                    تفريغ السلة
                   </button>
-                </div>
+                )}
               </div>
-            </div> */}
+
+              {cartItems.length === 0 ? (
+                <div className="text-center py-6 text-gray-500">
+                  <span className="text-3xl">🛒</span>
+                  <p className="text-xs mt-2">السلة فارغة، أضف منتجات من اليسار</p>
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-60 overflow-y-auto mb-3">
+                  {cartItems.map((item) => (
+                    <CartItem
+                      key={item.drug._id}
+                      item={item}
+                      onIncrease={(id, qty) => updateCartItem(id, qty)}
+                      onDecrease={(id) => {
+                        const current = cartItems.find(i => i.drug._id === id)
+                        if (current.quantity > 1) {
+                          updateCartItem(id, current.quantity - 1)
+                        } else {
+                          removeFromCart(id)
+                        }
+                      }}
+                      onRemove={removeFromCart}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {cartItems.length > 0 && (
+                <>
+                  <div className="flex justify-between items-center pt-2 border-t border-gray-200 text-sm">
+                    <span className="text-gray-600">الإجمالي:</span>
+                    <span className="font-bold text-purple-600">{cartSummary.totalValue.toFixed(2)} ل.س</span>
+                  </div>
+                  <button
+                    onClick={handleLoadAll}
+                    disabled={loading || cartItems.length === 0}
+                    className="w-full mt-3 h-11 bg-purple-500 text-white rounded-lg text-sm font-medium hover:bg-purple-600 disabled:bg-gray-200 disabled:text-gray-500 transition-colors"
+                  >
+                    {loading ? 'جاري التحميل...' : '⬆️ تحميل الكل إلى العربة'}
+                  </button>
+                </>
+              )}
+            </div>
 
             {/* Aktif araba bilgisi */}
             {cart && (
@@ -336,7 +433,7 @@ export default function LoadToCartPage() {
 
             {/* İpucu */}
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-700">
-              <p>💡 انقر على أي منتج لاختياره، ثم حدد الكمية واضغط تحميل.</p>
+              <p>💡 أضف المنتجات إلى السلة أولاً، ثم انقر "تحميل الكل" لنقلها دفعة واحدة إلى العربة.</p>
             </div>
           </div>
         </div>
