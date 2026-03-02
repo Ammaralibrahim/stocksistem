@@ -14,25 +14,13 @@ export default function NewDrugPage() {
     stock: '',
     price: '',
     expiryDate: '',
-    barcode: '',
-    serialNumber: '',
-    description: '',
-    category: '',
-    manufacturer: '',
-    purchasePrice: '',
-    supplier: '',
     location: '',
-    lowStockThreshold: '10'
+    lowStockThreshold: '10',
+    description: ''
   })
 
   const handleChange = (e) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
-  }
-
-  const generateBarcode = () => {
-    const barcode = '869' + Math.floor(1000000000000 + Math.random() * 9000000000000).toString().substring(0, 10)
-    setFormData(prev => ({ ...prev, barcode }))
-    toast.success('تم إنشاء الباركود')
   }
 
   const handleSubmit = async (e) => {
@@ -43,21 +31,13 @@ export default function NewDrugPage() {
 
     setLoading(true)
     try {
-      // payload hazırla – boş string'leri undefined yap
       const payload = {
-        ...formData,
+        name: formData.name,
         stock: parseInt(formData.stock),
         price: parseFloat(formData.price),
-        purchasePrice: formData.purchasePrice ? parseFloat(formData.purchasePrice) : undefined,
-        lowStockThreshold: parseInt(formData.lowStockThreshold) || 10,
         expiryDate: new Date(formData.expiryDate),
-        // opsiyonel alanlar – boş string yerine undefined
-        barcode: formData.barcode || undefined,
-        serialNumber: formData.serialNumber || undefined,
-        category: formData.category || undefined,
-        manufacturer: formData.manufacturer || undefined,
-        supplier: formData.supplier || undefined,
         location: formData.location || undefined,
+        lowStockThreshold: parseInt(formData.lowStockThreshold) || 10,
         description: formData.description || undefined
       }
 
@@ -128,66 +108,6 @@ export default function NewDrugPage() {
                   required
                   className="w-full h-12 px-4 bg-gray-50 border border-gray-200 rounded-xl text-base"
                   value={formData.expiryDate}
-                  onChange={handleChange}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">الباركود</label>
-                <div className="flex gap-2">
-                  <input
-                    name="barcode"
-                    type="text"
-                    className="flex-1 h-12 px-4 bg-gray-50 border border-gray-200 rounded-xl text-base"
-                    value={formData.barcode}
-                    onChange={handleChange}
-                  />
-                  <button
-                    type="button"
-                    onClick={generateBarcode}
-                    className="px-4 h-12 bg-purple-500 text-white rounded-xl text-base min-w-[44px]"
-                  >
-                    🔄
-                  </button>
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">الرقم التسلسلي</label>
-                <input
-                  name="serialNumber"
-                  type="text"
-                  className="w-full h-12 px-4 bg-gray-50 border border-gray-200 rounded-xl text-base"
-                  value={formData.serialNumber}
-                  onChange={handleChange}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">الفئة</label>
-                <input
-                  name="category"
-                  type="text"
-                  className="w-full h-12 px-4 bg-gray-50 border border-gray-200 rounded-xl text-base"
-                  value={formData.category}
-                  onChange={handleChange}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">الشركة المصنعة</label>
-                <input
-                  name="manufacturer"
-                  type="text"
-                  className="w-full h-12 px-4 bg-gray-50 border border-gray-200 rounded-xl text-base"
-                  value={formData.manufacturer}
-                  onChange={handleChange}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">سعر الشراء</label>
-                <input
-                  name="purchasePrice"
-                  type="number"
-                  step="0.01"
-                  className="w-full h-12 px-4 bg-gray-50 border border-gray-200 rounded-xl text-base"
-                  value={formData.purchasePrice}
                   onChange={handleChange}
                 />
               </div>
