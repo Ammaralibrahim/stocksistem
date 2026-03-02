@@ -9,12 +9,12 @@ import toast from 'react-hot-toast'
 // ==================== Alt Bileşenler ====================
 
 const QuantityInput = ({ value, onChange, max, disabled }) => (
-  <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden h-10 bg-white">
+  <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden h-8 bg-white">
     <button
       type="button"
       onClick={() => onChange(Math.min(max, (parseInt(value) || 1) + 1))}
       disabled={disabled || parseInt(value) >= max}
-      className="w-8 h-full bg-gray-50 hover:bg-gray-100 disabled:opacity-40 text-gray-600 text-lg transition-colors"
+      className="w-6 h-full bg-gray-50 hover:bg-gray-100 disabled:opacity-40 text-gray-600 text-sm transition-colors"
     >
       +
     </button>
@@ -25,13 +25,13 @@ const QuantityInput = ({ value, onChange, max, disabled }) => (
       value={value}
       onChange={(e) => onChange(e.target.value)}
       disabled={disabled}
-      className="w-14 text-center border-x border-gray-100 h-full text-sm focus:outline-none bg-white"
+      className="w-10 text-center border-x border-gray-100 h-full text-xs focus:outline-none bg-white"
     />
     <button
       type="button"
       onClick={() => onChange(Math.max(1, (parseInt(value) || 1) - 1))}
       disabled={disabled || parseInt(value) <= 1}
-      className="w-8 h-full bg-gray-50 hover:bg-gray-100 disabled:opacity-40 text-gray-600 text-lg transition-colors"
+      className="w-6 h-full bg-gray-50 hover:bg-gray-100 disabled:opacity-40 text-gray-600 text-sm transition-colors"
     >
       -
     </button>
@@ -56,22 +56,22 @@ const ProductCard = ({ drug, onAddToCart }) => {
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-md transition-shadow">
-      <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
-          <span className="text-blue-600 text-lg">💊</span>
+    <div className="bg-white rounded-xl border border-gray-100 p-3 hover:shadow-sm transition-shadow">
+      <div className="flex items-start gap-2">
+        <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+          <span className="text-blue-600 text-sm">💊</span>
         </div>
         <div className="flex-1 min-w-0">
-          <h4 className="font-medium text-gray-900 text-sm truncate">{drug.name}</h4>
-          <p className="text-xs text-gray-500 mt-0.5">{drug.price?.toFixed(2)} ل.س</p>
-          <div className="flex items-center gap-3 mt-1 text-xs">
+          <h4 className="font-medium text-gray-900 text-xs truncate">{drug.name}</h4>
+          <p className="text-[10px] text-gray-500 mt-0.5">{drug.price?.toFixed(2)} ل.س</p>
+          <div className="flex items-center gap-2 mt-1 text-[10px]">
             <span className="text-gray-600">المخزون: {drug.stock}</span>
             <span className="text-gray-600">العربة: {drug.cartStock || 0}</span>
           </div>
         </div>
       </div>
 
-      <div className="mt-3 flex items-center gap-2">
+      <div className="mt-2 flex items-center gap-1">
         <QuantityInput
           value={localQty}
           onChange={setLocalQty}
@@ -80,7 +80,7 @@ const ProductCard = ({ drug, onAddToCart }) => {
         <button
           onClick={handleAdd}
           disabled={!localQty || parseInt(localQty) <= 0 || parseInt(localQty) > drug.stock}
-          className="flex-1 h-10 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 disabled:bg-gray-200 disabled:text-gray-500 transition-colors"
+          className="flex-1 h-8 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700 disabled:bg-gray-200 disabled:text-gray-500 transition-colors"
         >
           إضافة
         </button>
@@ -91,7 +91,7 @@ const ProductCard = ({ drug, onAddToCart }) => {
 
 const CartItem = ({ item, onUpdate, onRemove }) => {
   const drug = item.drug
-  const maxQty = drug.stock // sepetteki toplam miktar stoku aşamaz
+  const maxQty = drug.stock
 
   const handleQtyChange = (newQty) => {
     const qty = parseInt(newQty)
@@ -107,28 +107,28 @@ const CartItem = ({ item, onUpdate, onRemove }) => {
   }
 
   return (
-    <div className="flex items-center justify-between p-3 bg-blue-50 rounded-xl">
+    <div className="flex items-center justify-between p-2 bg-blue-50 rounded-lg">
       <div className="flex-1 min-w-0">
-        <p className="font-medium text-gray-900 text-sm truncate">{drug.name}</p>
-        <div className="flex items-center gap-2 mt-1">
+        <p className="font-medium text-gray-900 text-xs truncate">{drug.name}</p>
+        <div className="flex items-center gap-1 mt-0.5">
           <button
             onClick={() => handleQtyChange(item.quantity - 1)}
-            className="w-7 h-7 bg-white border border-blue-200 rounded-lg text-sm hover:bg-blue-100 transition-colors"
+            className="w-5 h-5 bg-white border border-blue-200 rounded text-xs hover:bg-blue-100 transition-colors"
           >
             -
           </button>
-          <span className="w-6 text-center text-sm font-medium">{item.quantity}</span>
+          <span className="w-5 text-center text-xs">{item.quantity}</span>
           <button
             onClick={() => handleQtyChange(item.quantity + 1)}
-            className="w-7 h-7 bg-white border border-blue-200 rounded-lg text-sm hover:bg-blue-100 transition-colors"
+            className="w-5 h-5 bg-white border border-blue-200 rounded text-xs hover:bg-blue-100 transition-colors"
           >
             +
           </button>
         </div>
       </div>
-      <div className="text-left mr-3">
-        <p className="font-bold text-gray-900 text-sm">{(item.quantity * item.price).toFixed(2)}</p>
-        <button onClick={() => onRemove(drug._id)} className="text-gray-400 hover:text-red-500 text-xs transition-colors">
+      <div className="text-left mr-1">
+        <p className="font-bold text-gray-900 text-xs">{(item.quantity * item.price).toFixed(2)}</p>
+        <button onClick={() => onRemove(drug._id)} className="text-gray-400 hover:text-red-500 text-[10px] transition-colors">
           ✕
         </button>
       </div>
@@ -141,21 +141,24 @@ const LoadSkeleton = () => (
     <div className="h-7 w-40 bg-gray-200 rounded-xl mb-6" />
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
       <div className="lg:col-span-2 space-y-4">
-        {[1, 2, 3, 4].map(i => (
-          <div key={i} className="bg-white rounded-2xl border border-gray-100 p-4">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-gray-200 rounded-xl" />
-              <div className="flex-1 space-y-2">
-                <div className="h-4 w-3/4 bg-gray-200 rounded" />
-                <div className="h-3 w-1/2 bg-gray-200 rounded" />
+        <div className="h-12 bg-gray-200 rounded-xl" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="bg-white rounded-xl border border-gray-100 p-3">
+              <div className="flex items-start gap-2">
+                <div className="w-8 h-8 bg-gray-200 rounded-lg" />
+                <div className="flex-1 space-y-1">
+                  <div className="h-3 w-3/4 bg-gray-200 rounded" />
+                  <div className="h-2 w-1/2 bg-gray-200 rounded" />
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
       <div className="lg:col-span-1 space-y-4">
-        <div className="bg-white rounded-2xl border border-gray-100 p-4 h-40" />
-        <div className="bg-white rounded-2xl border border-gray-100 p-4 h-24" />
+        <div className="bg-white rounded-xl border border-gray-100 p-4 h-40" />
+        <div className="bg-white rounded-xl border border-gray-100 p-4 h-24" />
       </div>
     </div>
   </div>
@@ -169,7 +172,7 @@ export default function LoadToCartPage() {
   const [drugs, setDrugs] = useState([])
   const [cart, setCart] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
-  const [cartItems, setCartItems] = useState([]) // { drug, quantity, price }
+  const [cartItems, setCartItems] = useState([])
   const [pageLoading, setPageLoading] = useState(true)
 
   useEffect(() => {
@@ -281,56 +284,61 @@ export default function LoadToCartPage() {
     <div className="min-h-screen bg-gray-50 p-4 md:p-5" dir="rtl">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-6 flex items-center gap-3">
+        <div className="mb-4 flex items-center gap-3">
           <Link
             href="/cart"
-            className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors"
+            className="w-9 h-9 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors"
           >
-            <span className="text-lg">←</span>
+            <span className="text-base">←</span>
           </Link>
-          <h1 className="text-2xl font-semibold text-gray-900">تحميل إلى العربة</h1>
+          <h1 className="text-xl font-semibold text-gray-900">تحميل إلى العربة</h1>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          {/* Ürün Listesi */}
-          <div className="lg:col-span-2 space-y-4">
-            {/* Arama */}
+          {/* Ürün Listesi - soldaki büyük alan */}
+          <div className="lg:col-span-2 space-y-3">
+            {/* Arama kutusu */}
             <div className="relative">
               <input
                 type="text"
-                className="w-full h-12 pr-10 pl-4 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full h-10 pr-9 pl-3 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 placeholder="ابحث بالاسم أو الباركود..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
-              <span className="absolute right-3 top-3 text-gray-400">🔍</span>
+              <span className="absolute right-3 top-2.5 text-gray-400 text-sm">🔍</span>
             </div>
 
-            {/* Ürün Kartları */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {filteredDrugs.length === 0 ? (
-                <div className="col-span-2 text-center py-12 text-gray-500 bg-white rounded-2xl border border-gray-100">
-                  <span className="text-5xl">💊</span>
-                  <p className="text-sm mt-3">لا توجد منتجات متوفرة</p>
+            {/* Ürün kartları - ayrı scroll */}
+            <div className="bg-white rounded-xl border border-gray-200 p-3">
+              <h3 className="text-xs font-medium text-gray-500 mb-2 px-1">المنتجات المتوفرة</h3>
+              <div className="max-h-[calc(100vh-260px)] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {filteredDrugs.length === 0 ? (
+                    <div className="col-span-2 text-center py-8 text-gray-500">
+                      <span className="text-3xl">💊</span>
+                      <p className="text-xs mt-2">لا توجد منتجات متوفرة</p>
+                    </div>
+                  ) : (
+                    filteredDrugs.map((drug) => (
+                      <ProductCard
+                        key={drug._id}
+                        drug={drug}
+                        onAddToCart={addToCart}
+                      />
+                    ))
+                  )}
                 </div>
-              ) : (
-                filteredDrugs.map((drug) => (
-                  <ProductCard
-                    key={drug._id}
-                    drug={drug}
-                    onAddToCart={addToCart}
-                  />
-                ))
-              )}
+              </div>
             </div>
           </div>
 
           {/* Sağ Panel: Sepet + Araba Bilgisi */}
           <div className="space-y-4">
             {/* Sepet */}
-            <div className="bg-white rounded-2xl border border-gray-100 p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-medium text-gray-900">🛒 السلة</h3>
+            <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-medium text-gray-900 text-sm">🛒 السلة</h3>
                 {cartItems.length > 0 && (
                   <button
                     onClick={() => setCartItems([])}
@@ -342,13 +350,13 @@ export default function LoadToCartPage() {
               </div>
 
               {cartItems.length === 0 ? (
-                <div className="text-center py-8 text-gray-400">
-                  <span className="text-4xl">🛒</span>
+                <div className="text-center py-6 text-gray-400">
+                  <span className="text-3xl">🛒</span>
                   <p className="text-xs mt-2">السلة فارغة</p>
                 </div>
               ) : (
                 <>
-                  <div className="space-y-2 max-h-80 overflow-y-auto mb-4">
+                  <div className="space-y-2 max-h-60 overflow-y-auto mb-3">
                     {cartItems.map((item) => (
                       <CartItem
                         key={item.drug._id}
@@ -359,7 +367,7 @@ export default function LoadToCartPage() {
                     ))}
                   </div>
 
-                  <div className="flex justify-between items-center pt-3 border-t border-gray-100 text-sm">
+                  <div className="flex justify-between items-center pt-2 border-t border-gray-100 text-xs">
                     <span className="text-gray-600">الإجمالي</span>
                     <span className="font-semibold text-blue-600">{cartSummary.totalValue.toFixed(2)} ل.س</span>
                   </div>
@@ -367,7 +375,7 @@ export default function LoadToCartPage() {
                   <button
                     onClick={handleLoadAll}
                     disabled={loading}
-                    className="w-full mt-4 h-11 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 disabled:bg-gray-200 disabled:text-gray-500 transition-colors"
+                    className="w-full mt-3 h-9 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700 disabled:bg-gray-200 disabled:text-gray-500 transition-colors"
                   >
                     {loading ? 'جاري التحميل...' : 'تحميل الكل إلى العربة'}
                   </button>
@@ -377,17 +385,17 @@ export default function LoadToCartPage() {
 
             {/* Aktif Araba */}
             {cart && (
-              <div className="bg-white rounded-2xl border border-gray-100 p-5">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+              <div className="bg-white rounded-xl border border-gray-200 p-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
                     <span className="text-blue-600">🚚</span>
                   </div>
                   <div>
-                    <h4 className="font-medium text-gray-900 text-sm">{cart.name}</h4>
-                    <p className="text-xs text-gray-500">{cart.driverName || 'بدون سائق'}</p>
+                    <h4 className="font-medium text-gray-900 text-xs">{cart.name}</h4>
+                    <p className="text-[10px] text-gray-500">{cart.driverName || 'بدون سائق'}</p>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3 mt-3 text-xs">
+                <div className="grid grid-cols-2 gap-2 mt-2 text-[10px]">
                   <div>
                     <span className="text-gray-500">المنتجات:</span>
                     <span className="mr-1 font-medium">{cart.totalItems || 0}</span>
@@ -401,7 +409,7 @@ export default function LoadToCartPage() {
             )}
 
             {/* İpucu */}
-            <div className="bg-blue-50 rounded-xl p-4 text-xs text-blue-700">
+            <div className="bg-blue-50 rounded-lg p-3 text-[10px] text-blue-700">
               <p>💡 أضف المنتجات إلى السلة، ثم انقلها دفعة واحدة إلى العربة.</p>
             </div>
           </div>
