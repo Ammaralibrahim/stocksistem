@@ -19,7 +19,9 @@ export default function Dashboard() {
     expiringCount: 0,
     recentDrugs: [],
     lowStockDrugs: [],
-    expiringDrugs: []
+    expiringDrugs: [],
+    activeCart: null,
+    cartSales: { count: 0, total: 0 }
   })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -30,7 +32,7 @@ export default function Dashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      const response = await api.get('/dashboard/stats')
+      const response = await api.dashboard.getStats()
       setStats({
         todayOrders: response.todayOrders || 0,
         todaySales: response.todaySales || 0,
@@ -41,7 +43,9 @@ export default function Dashboard() {
         expiringCount: response.expiringCount || 0,
         recentDrugs: response.recentDrugs || [],
         lowStockDrugs: response.lowStockDrugs || [],
-        expiringDrugs: response.expiringDrugs || []
+        expiringDrugs: response.expiringDrugs || [],
+        activeCart: response.activeCart || null,
+        cartSales: response.cartSales || { count: 0, total: 0 }
       })
       setError(null)
     } catch (error) {
@@ -169,6 +173,92 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* Cart Section */}
+        {stats.activeCart && (
+          <div className="bg-white rounded-xl md:rounded-2xl border border-gray-100 overflow-hidden shadow-sm mb-6">
+            <div className="border-b border-gray-100 p-4 md:p-5">
+              <div className="flex items-center">
+                <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-blue-50 flex items-center justify-center ml-2 md:ml-3">
+                  <span className="text-blue-600 text-base md:text-lg">🚚</span>
+                </div>
+                <div className="text-right">
+                  <h2 className="font-semibold text-gray-900 text-sm md:text-base">العربة النشطة</h2>
+                  <p className="text-xs text-gray-500">معلومات وتفاصيل العربة</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-4 md:p-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">اسم العربة</span>
+                    <span className="font-medium">{stats.activeCart.name}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">السائق</span>
+                    <span className="font-medium">{stats.activeCart.driverName || 'غير معين'}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">عدد المنتجات</span>
+                    <span className="font-bold text-blue-600">{stats.activeCart.totalItems || 0}</span>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">قيمة العربة</span>
+                    <span className="font-bold text-emerald-600">{(stats.activeCart.totalValue || 0).toFixed(2)} ل.س</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">الحالة</span>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      stats.activeCart.status === 'نشطة' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-700'
+                    }`}>
+                      {stats.activeCart.status}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">آخر تحميل</span>
+                    <span className="text-sm">
+                      {stats.activeCart.lastLoadedAt ? format(new Date(stats.activeCart.lastLoadedAt), 'dd/MM HH:mm') : '-'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              {stats.cartSales?.count > 0 && (
+                <div className="mt-4 p-3 bg-purple-50 rounded-lg border border-purple-100">
+                  <div className="flex items-center justify-between">
+                    <div className="text-right">
+                      <p className="text-xs text-gray-600">مبيعات العربة اليوم</p>
+                      <p className="text-sm font-bold text-purple-700">{stats.cartSales.count} طلب</p>
+                    </div>
+                    <div className="text-left">
+                      <p className="text-xs text-gray-600">الإجمالي</p>
+                      <p className="text-sm font-bold text-purple-700">{stats.cartSales.total.toFixed(2)} ل.س</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              <div className="flex gap-3 mt-4">
+                <Link
+                  href="/cart"
+                  className="flex-1 py-2.5 text-center bg-blue-50 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors"
+                >
+                  عرض تفاصيل العربة
+                </Link>
+                <Link
+                  href="/cart/sale"
+                  className="flex-1 py-2.5 text-center bg-purple-50 text-purple-700 rounded-lg text-sm font-medium hover:bg-purple-100 transition-colors"
+                >
+                  بيع سريع
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Quick Actions */}
         <div className="mb-6 md:mb-8">
           <h2 className="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4 text-right">إجراءات سريعة</h2>
@@ -208,18 +298,18 @@ export default function Dashboard() {
             </Link>
 
             <Link 
-              href="/drugs" 
-              className="group bg-gradient-to-br from-purple-50 to-purple-50/50 border border-purple-100 rounded-xl md:rounded-2xl p-4 md:p-5 hover:border-purple-200 hover:shadow-md transition-all duration-300 active:scale-[0.98]"
+              href="/cart/load" 
+              className="group bg-gradient-to-br from-amber-50 to-amber-50/50 border border-amber-100 rounded-xl md:rounded-2xl p-4 md:p-5 hover:border-amber-200 hover:shadow-md transition-all duration-300 active:scale-[0.98]"
             >
               <div className="flex items-center">
-                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center ml-3 md:ml-4 group-hover:scale-110 transition-transform">
-                  <span className="text-lg md:text-xl text-white">📋</span>
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center ml-3 md:ml-4 group-hover:scale-110 transition-transform">
+                  <span className="text-lg md:text-xl text-white">📦</span>
                 </div>
                 <div className="text-right">
-                  <h3 className="font-semibold text-gray-900 group-hover:text-purple-600 transition-colors text-sm md:text-base">
-                    إدارة المخزون
+                  <h3 className="font-semibold text-gray-900 group-hover:text-amber-600 transition-colors text-sm md:text-base">
+                    تحميل للعربة
                   </h3>
-                  <p className="text-xs md:text-sm text-gray-600 mt-1">عرض وتحديث الأدوية</p>
+                  <p className="text-xs md:text-sm text-gray-600 mt-1">نقل منتجات من المستودع</p>
                 </div>
               </div>
             </Link>
@@ -472,8 +562,8 @@ export default function Dashboard() {
               <p className="text-xs md:text-sm text-gray-600 leading-relaxed">
                 • راقب الأدوية منخفضة المخزون لتجنب النفاد<br/>
                 • تحقق من تواريخ الانتهاء بانتظام<br/>
-                • أنشئ طلبات جديدة مباشرة من لوحة التحكم<br/>
-                • استخدم البحث للعثور على الأدوية بسرعة
+                • استخدم العربة للبيع السريع من المخزون المتحرك<br/>
+                • أنشئ طلبات جديدة مباشرة من لوحة التحكم
               </p>
             </div>
             <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-blue-100 flex items-center justify-center mr-3 md:mr-4 flex-shrink-0">

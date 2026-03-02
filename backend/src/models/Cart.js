@@ -86,22 +86,9 @@ const cartSchema = new mongoose.Schema({
 // Middleware لتحديث updatedAt وحساب الإجماليات
 cartSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
-  
-  if (this.items.length === 0) {
-    this.lastLoadedAt = null;
-  }
-  
   this.totalItems = this.items.reduce((sum, item) => sum + item.quantity, 0);
   this.totalValue = this.items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
-  
-  next();
-});
-
-// Middleware لتحديث lastLoadedAt عند إضافة منتجات
-cartSchema.pre('save', function(next) {
-  if (this.isModified('items') && this.items.length > 0) {
-    this.lastLoadedAt = Date.now();
-  }
+  if (this.items.length > 0) this.lastLoadedAt = Date.now();
   next();
 });
 
@@ -110,19 +97,17 @@ cartSchema.methods.addItem = async function(drug, quantity) {
   const existingItem = this.items.find(item => 
     item.drug.toString() === drug._id.toString()
   );
-  
   if (existingItem) {
     existingItem.quantity += quantity;
     existingItem.loadedAt = Date.now();
   } else {
     this.items.push({
       drug: drug._id,
-      quantity: quantity,
+      quantity,
       price: drug.price,
       loadedAt: Date.now()
     });
   }
-  
   return this.save();
 };
 
@@ -130,23 +115,11 @@ cartSchema.methods.removeItem = async function(drugId, quantity) {
   const itemIndex = this.items.findIndex(item => 
     item.drug.toString() === drugId.toString()
   );
-  
-  if (itemIndex === -1) {
-    throw new Error('المنتج غير موجود في العربة');
-  }
-  
+  if (itemIndex === -1) throw new Error('المنتج غير موجود في العربة');
   const item = this.items[itemIndex];
-  
-  if (item.quantity < quantity) {
-    throw new Error(`كمية غير كافية في العربة. المتاحة: ${item.quantity}`);
-  }
-  
+  if (item.quantity < quantity) throw new Error(`كمية غير كافية في العربة. المتاحة: ${item.quantity}`);
   item.quantity -= quantity;
-  
-  if (item.quantity <= 0) {
-    this.items.splice(itemIndex, 1);
-  }
-  
+  if (item.quantity <= 0) this.items.splice(itemIndex, 1);
   return this.save();
 };
 
@@ -157,9 +130,7 @@ cartSchema.methods.clearItems = async function() {
 };
 
 cartSchema.methods.getItemQuantity = function(drugId) {
-  const item = this.items.find(item => 
-    item.drug.toString() === drugId.toString()
-  );
+  const item = this.items.find(item => item.drug.toString() === drugId.toString());
   return item ? item.quantity : 0;
 };
 
@@ -169,5 +140,4 @@ cartSchema.index({ updatedAt: -1 });
 cartSchema.index({ 'items.drug': 1 });
 
 const Cart = mongoose.model('Cart', cartSchema);
-
 module.exports = Cart;

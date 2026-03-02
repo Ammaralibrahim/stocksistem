@@ -53,14 +53,11 @@ api.cart = {
   loadToCart: (drugId, quantity, cartId) => 
     api.post('/cart/load', { drugId, quantity, cartId }),
   
-  unloadFromCart: (drugId, quantity, cartId) => 
+  unload: (drugId, quantity, cartId) =>   // تم تغيير الاسم من unloadFromCart إلى unload
     api.post('/cart/unload', { drugId, quantity, cartId }),
   
   unloadAll: (cartId, notes) => 
     api.post('/cart/unload-all', { cartId, notes }),
-  
-  quickSale: (data) => 
-    api.post('/orders/cart-sale', data),
   
   getActive: () => api.get('/cart/active'),
   
@@ -99,7 +96,8 @@ api.orders = {
   getToday: () => api.get('/orders/today'),
   getById: (id) => api.get(`/orders/${id}`),
   update: (id, data) => api.put(`/orders/${id}`, data),
-  cartSale: (data) => api.post('/orders/cart-sale', data)
+  delete: (id) => api.delete(`/orders/${id}`),
+  cartSale: (data) => api.post('/orders/cart-sale', data)   // تم الإبقاء على هذه الدالة فقط
 };
 
 // Auth methods

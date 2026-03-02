@@ -50,7 +50,9 @@ router.post('/', auth, async (req, res) => {
   try {
     const { items, cartUsed, ...orderData } = req.body;
 
-    // التحقق من المخزون
+    // معالجة العناصر: تقسيم أي عنصر يحتاج إلى مصدرين
+    const processedItems = [];
+
     for (const item of items) {
       const drug = await Drug.findById(item.drug).session(session);
       if (!drug) {
@@ -62,47 +64,64 @@ router.post('/', auth, async (req, res) => {
         throw new Error(`مخزون غير كافٍ: ${drug.name}. إجمالي المتاح: ${totalStock}, المطلوب: ${item.quantity}`);
       }
 
-      // تحديد المصدر
+      // إذا كانت العربة محددة والمخزون في العربة كافٍ
       if (cartUsed && drug.cartStock >= item.quantity) {
-        item.source = 'العربة';
-      } else if (drug.stock >= item.quantity) {
-        item.source = 'المستودع';
-      } else {
+        processedItems.push({
+          drug: item.drug,
+          quantity: item.quantity,
+          price: item.price,
+          source: 'العربة'
+        });
+      } 
+      // إذا كان مخزون المستودع كافٍ
+      else if (drug.stock >= item.quantity) {
+        processedItems.push({
+          drug: item.drug,
+          quantity: item.quantity,
+          price: item.price,
+          source: 'المستودع'
+        });
+      } 
+      // نحتاج للتقسيم
+      else {
         const fromCart = Math.min(item.quantity, drug.cartStock);
         const fromWarehouse = item.quantity - fromCart;
 
         if (fromCart > 0) {
-          item.source = 'العربة';
-          item.quantity = fromCart;
-
-          if (fromWarehouse > 0) {
-            items.push({
-              drug: item.drug,
-              quantity: fromWarehouse,
-              price: item.price,
-              source: 'المستودع'
-            });
-          }
-        } else {
-          item.source = 'المستودع';
+          processedItems.push({
+            drug: item.drug,
+            quantity: fromCart,
+            price: item.price,
+            source: 'العربة'
+          });
+        }
+        if (fromWarehouse > 0) {
+          processedItems.push({
+            drug: item.drug,
+            quantity: fromWarehouse,
+            price: item.price,
+            source: 'المستودع'
+          });
         }
       }
     }
 
+    // إنشاء رقم الطلب
     const date = new Date();
     const orderNumber = `ORD-${date.getFullYear()}${(date.getMonth() + 1).toString().padStart(2, '0')}${date.getDate().toString().padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
 
     const order = new Order({
       ...orderData,
       orderNumber,
-      items,
+      items: processedItems,
       cartUsed,
-      totalAmount: items.reduce((sum, item) => sum + (item.quantity * item.price), 0)
+      totalAmount: processedItems.reduce((sum, item) => sum + (item.quantity * item.price), 0)
     });
 
     await order.save({ session });
 
-    for (const item of items) {
+    // خصم المخزون
+    for (const item of processedItems) {
       const drug = await Drug.findById(item.drug).session(session);
       if (!drug) continue;
 
@@ -138,7 +157,7 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-// تحديث الطلب (مصحح)
+// تحديث الطلب
 router.put('/:id', auth, async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -152,21 +171,8 @@ router.put('/:id', auth, async (req, res) => {
       throw new Error('الطلب غير موجود');
     }
 
-    // إذا لم يتم إرسال items، استخدم items الحالية من الطلب
-    let items = newItems;
-    if (!items) {
-      items = existingOrder.items.map(item => ({
-        drug: item.drug, // معرف الدواء (ObjectId)
-        quantity: item.quantity,
-        price: item.price,
-        source: item.source // المصدر القديم
-      }));
-    }
-
-    const oldItems = existingOrder.items || [];
-
     // استعادة المخزون القديم
-    for (const oldItem of oldItems) {
+    for (const oldItem of existingOrder.items) {
       if (!oldItem.drug) continue;
 
       const drug = await Drug.findById(oldItem.drug).session(session);
@@ -178,17 +184,14 @@ router.put('/:id', auth, async (req, res) => {
         if (existingOrder.cartUsed) {
           const cart = await Cart.findById(existingOrder.cartUsed).session(session);
           if (cart) {
-            if (typeof cart.addItem === 'function') {
-              await cart.addItem(drug, oldItem.quantity);
+            // إعادة إلى العربة
+            const existingCartItem = cart.items.find(i => i.drug.toString() === drug._id.toString());
+            if (existingCartItem) {
+              existingCartItem.quantity += oldItem.quantity;
             } else {
-              const existingCartItem = cart.items.find(i => i.drug.toString() === drug._id.toString());
-              if (existingCartItem) {
-                existingCartItem.quantity += oldItem.quantity;
-              } else {
-                cart.items.push({ drug: drug._id, quantity: oldItem.quantity });
-              }
-              await cart.save({ session });
+              cart.items.push({ drug: drug._id, quantity: oldItem.quantity, price: drug.price, loadedAt: Date.now() });
             }
+            await cart.save({ session });
           }
         }
       } else {
@@ -198,8 +201,21 @@ router.put('/:id', auth, async (req, res) => {
       await drug.save({ session });
     }
 
-    // التحقق من المخزون الجديد
-    for (const item of items) {
+    // إذا لم يتم إرسال items جديدة، نستخدم القديمة (بدون تغيير)
+    let itemsToProcess = newItems;
+    if (!itemsToProcess) {
+      itemsToProcess = existingOrder.items.map(item => ({
+        drug: item.drug,
+        quantity: item.quantity,
+        price: item.price,
+        source: item.source
+      }));
+    }
+
+    // معالجة العناصر الجديدة (تقسيم إذا لزم الأمر)
+    const processedItems = [];
+
+    for (const item of itemsToProcess) {
       const drug = await Drug.findById(item.drug).session(session);
       if (!drug) {
         throw new Error(`الدواء غير موجود: ${item.drug}`);
@@ -210,29 +226,39 @@ router.put('/:id', auth, async (req, res) => {
         throw new Error(`مخزون غير كافٍ: ${drug.name}. إجمالي المتاح: ${totalStock}, المطلوب: ${item.quantity}`);
       }
 
-      // تحديد المصدر
       if (cartUsed && drug.cartStock >= item.quantity) {
-        item.source = 'العربة';
+        processedItems.push({
+          drug: item.drug,
+          quantity: item.quantity,
+          price: item.price,
+          source: 'العربة'
+        });
       } else if (drug.stock >= item.quantity) {
-        item.source = 'المستودع';
+        processedItems.push({
+          drug: item.drug,
+          quantity: item.quantity,
+          price: item.price,
+          source: 'المستودع'
+        });
       } else {
         const fromCart = Math.min(item.quantity, drug.cartStock);
         const fromWarehouse = item.quantity - fromCart;
 
         if (fromCart > 0) {
-          item.source = 'العربة';
-          item.quantity = fromCart;
-
-          if (fromWarehouse > 0) {
-            items.push({
-              drug: item.drug,
-              quantity: fromWarehouse,
-              price: item.price,
-              source: 'المستودع'
-            });
-          }
-        } else {
-          item.source = 'المستودع';
+          processedItems.push({
+            drug: item.drug,
+            quantity: fromCart,
+            price: item.price,
+            source: 'العربة'
+          });
+        }
+        if (fromWarehouse > 0) {
+          processedItems.push({
+            drug: item.drug,
+            quantity: fromWarehouse,
+            price: item.price,
+            source: 'المستودع'
+          });
         }
       }
     }
@@ -241,9 +267,9 @@ router.put('/:id', auth, async (req, res) => {
       orderId,
       {
         ...updateData,
-        items,
-        cartUsed: cartUsed !== undefined ? cartUsed : existingOrder.cartUsed, // احتفظ بالقديم إذا لم يتم إرسال cartUsed
-        totalAmount: items.reduce((sum, item) => sum + (item.quantity * item.price), 0),
+        items: processedItems,
+        cartUsed: cartUsed !== undefined ? cartUsed : existingOrder.cartUsed,
+        totalAmount: processedItems.reduce((sum, item) => sum + (item.quantity * item.price), 0),
         updatedAt: Date.now()
       },
       { new: true, session, runValidators: true }
@@ -252,7 +278,7 @@ router.put('/:id', auth, async (req, res) => {
       .populate('cartUsed', 'name driverName');
 
     // خصم المخزون الجديد
-    for (const item of items) {
+    for (const item of processedItems) {
       const drug = await Drug.findById(item.drug).session(session);
       if (!drug) continue;
 
@@ -429,17 +455,13 @@ router.delete('/:id', auth, async (req, res) => {
         if (order.cartUsed) {
           const cart = await Cart.findById(order.cartUsed).session(session);
           if (cart) {
-            if (typeof cart.addItem === 'function') {
-              await cart.addItem(drug, item.quantity);
+            const existingCartItem = cart.items.find(i => i.drug.toString() === drug._id.toString());
+            if (existingCartItem) {
+              existingCartItem.quantity += item.quantity;
             } else {
-              const existingCartItem = cart.items.find(i => i.drug.toString() === drug._id.toString());
-              if (existingCartItem) {
-                existingCartItem.quantity += item.quantity;
-              } else {
-                cart.items.push({ drug: drug._id, quantity: item.quantity });
-              }
-              await cart.save({ session });
+              cart.items.push({ drug: drug._id, quantity: item.quantity, price: drug.price, loadedAt: Date.now() });
             }
+            await cart.save({ session });
           }
         }
       } else {

@@ -79,7 +79,6 @@ orderSchema.pre('save', function(next) {
   next();
 });
 
-// إنشاء رقم طلب فريد
 orderSchema.pre('save', async function(next) {
   if (!this.orderNumber) {
     const date = new Date();
@@ -92,7 +91,6 @@ orderSchema.pre('save', async function(next) {
   next();
 });
 
-// إعداد فهارس للأداء
 orderSchema.index({ orderNumber: 1 }, { unique: true });
 orderSchema.index({ cartUsed: 1 });
 orderSchema.index({ createdAt: -1 });

@@ -50,7 +50,6 @@ const cartTransferSchema = new mongoose.Schema({
   }
 });
 
-// Middleware لحساب الإجماليات قبل الحفظ
 cartTransferSchema.pre('save', function(next) {
   if (this.isModified('items')) {
     this.totalItems = this.items.reduce((sum, item) => sum + item.quantity, 0);
@@ -59,10 +58,8 @@ cartTransferSchema.pre('save', function(next) {
   next();
 });
 
-// فهرسة للحصول على التحويلات بسرعة
 cartTransferSchema.index({ cart: 1, transferredAt: -1 });
 cartTransferSchema.index({ transferredAt: -1 });
 
 const CartTransfer = mongoose.model('CartTransfer', cartTransferSchema);
-
 module.exports = CartTransfer;

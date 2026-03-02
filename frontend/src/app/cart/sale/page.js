@@ -6,6 +6,47 @@ import Link from 'next/link'
 import api from '@/lib/api'
 import toast from 'react-hot-toast'
 
+// Skeleton bileşeni
+const SaleSkeleton = () => (
+  <div className="space-y-4 animate-pulse">
+    <div className="h-7 w-40 bg-gray-200 rounded-lg mb-6" />
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="lg:col-span-2">
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <div className="h-5 w-32 bg-gray-200 rounded mb-4" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="border border-gray-200 rounded-lg p-3">
+                <div className="flex items-start gap-2">
+                  <div className="w-10 h-10 bg-gray-200 rounded-lg" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 w-3/4 bg-gray-200 rounded" />
+                    <div className="h-3 w-1/2 bg-gray-200 rounded" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="lg:col-span-1 space-y-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <div className="h-5 w-24 bg-gray-200 rounded mb-3" />
+          <div className="h-24 bg-gray-200 rounded-lg" />
+        </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <div className="h-5 w-28 bg-gray-200 rounded mb-3" />
+          <div className="space-y-3">
+            <div className="h-10 bg-gray-200 rounded-lg" />
+            <div className="h-10 bg-gray-200 rounded-lg" />
+            <div className="h-10 bg-gray-200 rounded-lg" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+)
+
 export default function CartSalePage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -17,6 +58,7 @@ export default function CartSalePage() {
     paymentMethod: 'نقدي'
   })
   const [searchTerm, setSearchTerm] = useState('')
+  const [pageLoading, setPageLoading] = useState(true)
 
   const fetchCart = useCallback(async () => {
     try {
@@ -25,6 +67,8 @@ export default function CartSalePage() {
     } catch (error) {
       console.error('خطأ في تحميل العربة:', error)
       toast.error('فشل تحميل العربة')
+    } finally {
+      setPageLoading(false)
     }
   }, [])
 
@@ -43,15 +87,13 @@ export default function CartSalePage() {
     const availableQuantity = cartItem?.quantity || 0
     
     if (existing && existing.quantity >= availableQuantity) {
-      toast.error(`لا توجد كمية كافية في العربة. المتوفر: ${availableQuantity}`)
+      toast.error(`لا توجد كمية كافية. المتوفر: ${availableQuantity}`)
       return
     }
     
     if (existing) {
       setSelectedItems(prev => prev.map(i =>
-        i.drug._id === item.drug._id
-          ? { ...i, quantity: i.quantity + 1 }
-          : i
+        i.drug._id === item.drug._id ? { ...i, quantity: i.quantity + 1 } : i
       ))
     } else {
       setSelectedItems(prev => [...prev, {
@@ -61,7 +103,7 @@ export default function CartSalePage() {
       }])
     }
     
-    toast.success(`${item.drug.name} تمت إضافته إلى السلة`)
+    toast.success(`${item.drug.name} أضيف إلى السلة`, { icon: '🛒' })
   }, [cart, selectedItems])
 
   const handleRemoveItem = useCallback((drugId) => {
@@ -80,14 +122,12 @@ export default function CartSalePage() {
     if (!item || !cartItem) return
     
     if (quantity > cartItem.quantity) {
-      toast.error(`لا توجد كمية كافية في العربة. المتوفر: ${cartItem.quantity}`)
+      toast.error(`الحد الأقصى ${cartItem.quantity}`)
       return
     }
     
     setSelectedItems(prev => prev.map(item =>
-      item.drug._id === drugId
-        ? { ...item, quantity }
-        : item
+      item.drug._id === drugId ? { ...item, quantity } : item
     ))
   }, [cart, selectedItems, handleRemoveItem])
 
@@ -95,12 +135,12 @@ export default function CartSalePage() {
     e.preventDefault()
     
     if (selectedItems.length === 0) {
-      toast.error('الرجاء اختيار منتج واحد على الأقل')
+      toast.error('اختر منتج واحد على الأقل')
       return
     }
     
     if (!customerInfo.name.trim()) {
-      toast.error('الرجاء إدخال اسم العميل')
+      toast.error('أدخل اسم العميل')
       return
     }
     
@@ -120,32 +160,14 @@ export default function CartSalePage() {
       }
       
       await api.orders.cartSale(orderData)
-      toast.success('تم إتمام البيع بنجاح!')
-      
-      // تنظيف السلة والنموذج
+      toast.success('تم البيع بنجاح!')
       setSelectedItems([])
-      setCustomerInfo({
-        name: '',
-        phone: '',
-        paymentMethod: 'نقدي'
-      })
-      
-      // تحديث العربة
+      setCustomerInfo({ name: '', phone: '', paymentMethod: 'نقدي' })
       await fetchCart()
-      
-      // الانتقال إلى صفحة الطلبات بعد ثانية
-      setTimeout(() => {
-        router.push('/orders')
-      }, 1000)
-      
+      setTimeout(() => router.push('/orders'), 1000)
     } catch (error) {
       console.error('خطأ في البيع:', error)
-      
-      if (error.message.includes('Write conflict')) {
-        toast.error('حدث تعارض في الكتابة. يرجى المحاولة مرة أخرى')
-      } else {
-        toast.error(error.message || 'فشل البيع')
-      }
+      toast.error(error.message || 'فشل البيع')
     } finally {
       setLoading(false)
     }
@@ -164,67 +186,58 @@ export default function CartSalePage() {
     )
   }) || []
 
+  if (pageLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-3" dir="rtl">
+        <div className="max-w-7xl mx-auto">
+          <SaleSkeleton />
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white p-4 md:p-6" dir="rtl">
+    <div className="min-h-screen bg-gray-50 p-3" dir="rtl">
       <div className="max-w-7xl mx-auto">
-        {/* الرأس */}
-        <div className="mb-8">
-          <div className="flex items-center mb-6 flex-row-reverse">
+        {/* Header */}
+        <div className="mb-6">
+          <div className="flex items-center gap-2">
             <Link 
               href="/cart" 
-              className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors ml-4"
+              className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors"
             >
-              <span className="ml-2">←</span>
-              العودة إلى العربة
+              <span className="text-lg">←</span>
             </Link>
-            <div className="flex-1 text-right">
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight">
-                🚚 البيع السريع من العربة
-              </h1>
-              <p className="text-gray-500 mt-1">
-                قم بالبيع السريع من المنتجات الموجودة في العربة
-              </p>
-            </div>
+            <h1 className="text-xl font-bold text-gray-900">🚚 بيع سريع من العربة</h1>
           </div>
+          <p className="text-sm text-gray-500 mt-1 pr-11">اختر المنتجات للبيع</p>
         </div>
 
-        {/* المحتوى الرئيسي */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* العمود الأيسر - المنتجات في العربة */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          {/* Ürün Listesi */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-              <div className="flex items-center justify-between mb-6 flex-row-reverse">
-                <div className="text-right">
-                  <h3 className="text-lg font-semibold text-gray-900">المنتجات في العربة</h3>
-                  <p className="text-sm text-gray-500 mt-1">اختر المنتجات للبيع</p>
-                </div>
-                <div className="relative">
+            <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                <h3 className="font-semibold text-gray-900">المنتجات في العربة</h3>
+                <div className="relative w-full sm:w-64">
                   <input
                     type="text"
-                    className="w-64 pr-10 pl-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-right"
-                    placeholder="ابحث عن منتج..."
+                    className="w-full h-10 pr-9 pl-3 bg-gray-50 border border-gray-200 rounded-lg text-sm"
+                    placeholder="ابحث..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
-                  <div className="absolute right-3 top-2.5 text-gray-400">
-                    🔍
-                  </div>
+                  <span className="absolute right-3 top-2.5 text-gray-400">🔍</span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[500px] overflow-y-auto p-1">
                 {filteredItems.length === 0 ? (
-                  <div className="col-span-2 text-center py-12">
-                    <div className="w-20 h-20 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
-                      <span className="text-3xl">🚚</span>
-                    </div>
-                    <h4 className="font-medium text-gray-900 mb-2">لا توجد منتجات في العربة</h4>
-                    <p className="text-gray-600">قم بتحميل المنتجات إلى العربة أولاً.</p>
-                    <Link
-                      href="/cart/load"
-                      className="inline-block mt-4 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-medium hover:from-blue-600 hover:to-blue-700 transition-all"
-                    >
-                      📦 تحميل منتجات
+                  <div className="col-span-2 text-center py-8 text-gray-500">
+                    <span className="text-4xl">🚚</span>
+                    <p className="text-sm mt-2">العربة فارغة</p>
+                    <Link href="/cart/load" className="inline-block mt-3 text-blue-500 text-sm underline">
+                      تحميل منتجات
                     </Link>
                   </div>
                 ) : (
@@ -236,62 +249,54 @@ export default function CartSalePage() {
                     return (
                       <div
                         key={item._id || item.drug._id}
-                        className={`group relative bg-white border rounded-xl p-4 hover:shadow-md transition-all duration-200 ${
-                          inCart ? 'border-purple-300 bg-purple-50/50' : 'border-gray-200'
+                        className={`border rounded-lg p-3 ${
+                          inCart ? 'border-purple-300 bg-purple-50' : 'border-gray-200 bg-white'
                         }`}
                       >
-                        <div className="flex items-start flex-row-reverse">
-                          <div className={`w-12 h-12 rounded-lg flex items-center justify-center ml-3 ${
-                            inCart ? 'bg-gradient-to-br from-purple-50 to-purple-100' : 'bg-gradient-to-br from-gray-50 to-gray-100'
+                        <div className="flex items-start gap-2">
+                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                            inCart ? 'bg-purple-200' : 'bg-gray-100'
                           }`}>
-                            <span className={inCart ? 'text-purple-600 text-lg' : 'text-gray-600 text-lg'}>💊</span>
+                            <span className={inCart ? 'text-purple-600' : 'text-gray-600'}>💊</span>
                           </div>
-                          <div className="flex-1 text-right">
-                            <h4 className="font-medium text-gray-900">{item.drug?.name || 'منتج غير معروف'}</h4>
-                            <div className="flex items-center justify-between mt-2 flex-row-reverse">
-                              <div className="text-right">
-                                <p className="text-lg font-bold text-gray-900">
-                                  {(item.price || 0).toFixed(2)} ل.س
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  في العربة: <span className="font-medium">{availableQuantity} وحدة</span>
-                                </p>
-                                {inCart && (
-                                  <p className={`text-sm font-medium ${cartQuantity > availableQuantity ? 'text-red-600' : 'text-purple-600'}`}>
-                                    في السلة: {cartQuantity} وحدة
-                                  </p>
-                                )}
-                              </div>
-                              <div className="flex items-center space-x-2 space-x-reverse">
-                                {inCart && (
-                                  <div className="flex items-center space-x-1 space-x-reverse">
-                                    <button
-                                      onClick={() => handleQuantityChange(item.drug._id, cartQuantity - 1)}
-                                      className="w-6 h-6 flex items-center justify-center bg-white border border-purple-300 rounded hover:bg-purple-50 transition-colors"
-                                    >
-                                      -
-                                    </button>
-                                    <span className="w-8 text-center font-medium">{cartQuantity}</span>
-                                    <button
-                                      onClick={() => handleQuantityChange(item.drug._id, cartQuantity + 1)}
-                                      className="w-6 h-6 flex items-center justify-center bg-white border border-purple-300 rounded hover:bg-purple-50 transition-colors"
-                                    >
-                                      +
-                                    </button>
-                                  </div>
-                                )}
-                                <button
-                                  onClick={() => handleAddItem(item)}
-                                  disabled={cartQuantity >= availableQuantity}
-                                  className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all ${
-                                    cartQuantity >= availableQuantity
-                                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                      : 'bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700'
-                                  }`}
-                                >
-                                  {inCart ? 'إضافة أخرى' : 'إضافة إلى السلة'}
-                                </button>
-                              </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium text-gray-900 text-sm truncate">{item.drug?.name}</h4>
+                            <p className="text-xs text-gray-500 mt-0.5">{item.price.toFixed(2)} ل.س</p>
+                            <div className="flex items-center justify-between mt-2">
+                              <span className="text-xs text-gray-600">المتوفر: {availableQuantity}</span>
+                              {inCart && (
+                                <span className="text-xs text-purple-600">في السلة: {cartQuantity}</span>
+                              )}
+                            </div>
+                            <div className="flex items-center justify-between mt-2">
+                              {inCart && (
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    onClick={() => handleQuantityChange(item.drug._id, cartQuantity - 1)}
+                                    className="w-7 h-7 bg-white border border-purple-300 rounded-lg text-sm"
+                                  >
+                                    -
+                                  </button>
+                                  <span className="w-6 text-center text-sm">{cartQuantity}</span>
+                                  <button
+                                    onClick={() => handleQuantityChange(item.drug._id, cartQuantity + 1)}
+                                    className="w-7 h-7 bg-white border border-purple-300 rounded-lg text-sm"
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                              )}
+                              <button
+                                onClick={() => handleAddItem(item)}
+                                disabled={cartQuantity >= availableQuantity}
+                                className={`px-3 py-1.5 text-xs font-medium rounded-lg ${
+                                  cartQuantity >= availableQuantity
+                                    ? 'bg-gray-100 text-gray-400'
+                                    : 'bg-purple-500 text-white'
+                                }`}
+                              >
+                                {inCart ? '➕ إضافة' : '➕ أضف'}
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -303,180 +308,103 @@ export default function CartSalePage() {
             </div>
           </div>
 
-          {/* العمود الأيمن - سلة البيع */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-6">
-              {/* سلة البيع */}
-              <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm mb-6">
-                <div className="flex items-center justify-between mb-4 flex-row-reverse">
-                  <div className="text-right">
-                    <h3 className="text-lg font-semibold text-gray-900">سلة البيع</h3>
-                    <p className="text-sm text-gray-500 mt-1">{selectedItems.length} منتج</p>
-                  </div>
-                  {selectedItems.length > 0 && (
-                    <button
-                      onClick={() => setSelectedItems([])}
-                      className="text-sm text-red-600 hover:text-red-700 font-medium"
-                    >
-                      تفريغ السلة
-                    </button>
-                  )}
-                </div>
-
-                {selectedItems.length === 0 ? (
-                  <div className="text-center py-8">
-                    <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
-                      <span className="text-2xl">🛒</span>
-                    </div>
-                    <p className="text-gray-600">سلة البيع فارغة</p>
-                    <p className="text-sm text-gray-500 mt-1">أضف منتجات من القائمة</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
-                    {selectedItems.map((item) => {
-                      const cartItem = cart?.items?.find(i => i.drug._id === item.drug._id)
-                      const availableQuantity = cartItem?.quantity || 0
-                      
-                      return (
-                        <div
-                          key={item.drug._id}
-                          className={`flex items-center justify-between p-3 rounded-lg flex-row-reverse ${
-                            item.quantity > availableQuantity ? 'bg-red-50' : 'bg-purple-50'
-                          }`}
-                        >
-                          <div className="flex-1 text-right">
-                            <h4 className="font-medium text-gray-900">{item.drug.name}</h4>
-                            <div className="flex items-center justify-between mt-2 flex-row-reverse">
-                              <div className="flex items-center space-x-2 space-x-reverse">
-                                <button
-                                  onClick={() => handleQuantityChange(item.drug._id, item.quantity - 1)}
-                                  className="w-6 h-6 flex items-center justify-center bg-white border border-purple-300 rounded hover:bg-purple-50 transition-colors"
-                                >
-                                  -
-                                </button>
-                                <span className="w-8 text-center font-medium">{item.quantity}</span>
-                                <button
-                                  onClick={() => handleQuantityChange(item.drug._id, item.quantity + 1)}
-                                  className="w-6 h-6 flex items-center justify-center bg-white border border-purple-300 rounded hover:bg-purple-50 transition-colors"
-                                >
-                                  +
-                                </button>
-                              </div>
-                              <div className="text-left">
-                                <p className="font-medium text-gray-900">
-                                  {(item.quantity * item.price).toFixed(2)} ل.س
-                                </p>
-                                <p className="text-xs text-gray-500">الوحدة: {item.price.toFixed(2)} ل.س</p>
-                              </div>
-                            </div>
-                            {item.quantity > availableQuantity && (
-                              <p className="text-xs text-red-600 mt-1 text-right">
-                                ⚠️ الكمية المطلوبة أكبر من المتاح ({availableQuantity})
-                              </p>
-                            )}
-                          </div>
-                          <button
-                            onClick={() => handleRemoveItem(item.drug._id)}
-                            className="mr-2 text-gray-400 hover:text-red-600 transition-colors"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
-
-                {/* الإجمالي */}
+          {/* Sepet ve Müşteri Formu */}
+          <div className="lg:col-span-1 space-y-4">
+            {/* Sepet */}
+            <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-gray-900 text-sm">السلة ({selectedItems.length})</h3>
                 {selectedItems.length > 0 && (
-                  <div className="mt-6 pt-6 border-t border-gray-200">
-                    <div className="flex justify-between items-center text-lg flex-row-reverse">
-                      <span className="font-semibold text-gray-900">الإجمالي</span>
-                      <span className="text-2xl font-bold text-purple-600">
-                        {calculateTotal().toFixed(2)} ل.س
-                      </span>
-                    </div>
-                  </div>
+                  <button
+                    onClick={() => setSelectedItems([])}
+                    className="text-xs text-red-600"
+                  >
+                    تفريغ
+                  </button>
                 )}
               </div>
 
-              {/* معلومات العميل */}
-              <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-                <h3 className="font-semibold text-gray-900 mb-4 text-right">معلومات العميل</h3>
-                
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2 text-right">
-                      اسم العميل <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-right"
-                      value={customerInfo.name}
-                      onChange={(e) => setCustomerInfo({...customerInfo, name: e.target.value})}
-                      placeholder="اسم العميل"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2 text-right">
-                      رقم الهاتف
-                    </label>
-                    <input
-                      type="tel"
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-right"
-                      value={customerInfo.phone}
-                      onChange={(e) => setCustomerInfo({...customerInfo, phone: e.target.value})}
-                      placeholder="05xx xxx xx xx"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2 text-right">
-                      طريقة الدفع
-                    </label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {['نقدي', 'بطاقة ائتمان', 'تحويل بنكي'].map(method => (
-                        <button
-                          key={method}
-                          type="button"
-                          onClick={() => setCustomerInfo({...customerInfo, paymentMethod: method})}
-                          className={`py-3 text-center rounded-xl transition-all ${
-                            customerInfo.paymentMethod === method
-                              ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-sm'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                          }`}
-                        >
-                          {method === 'نقدي' ? '💰 نقدي' : 
-                           method === 'بطاقة ائتمان' ? '💳 بطاقة' : 
-                           '🏦 تحويل'}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <button
-                    type="submit"
-                    disabled={loading || selectedItems.length === 0 || !customerInfo.name.trim()}
-                    className={`w-full py-3 rounded-xl font-medium transition-all flex items-center justify-center ${
-                      loading || selectedItems.length === 0 || !customerInfo.name.trim()
-                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                        : 'bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700'
-                    }`}
-                  >
-                    {loading ? (
-                      <>
-                        <div className="w-5 h-5 border-t-2 border-white border-solid rounded-full animate-spin ml-2"></div>
-                        جاري إتمام البيع...
-                      </>
-                    ) : (
-                      '✅ إتمام البيع'
-                    )}
-                  </button>
+              {selectedItems.length === 0 ? (
+                <div className="text-center py-6 text-gray-500">
+                  <span className="text-3xl">🛒</span>
+                  <p className="text-xs mt-2">سلة البيع فارغة</p>
                 </div>
-              </form>
+              ) : (
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {selectedItems.map((item) => (
+                    <div key={item.drug._id} className="flex items-center justify-between p-2 bg-purple-50 rounded-lg">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-gray-900 text-xs truncate">{item.drug.name}</p>
+                        <div className="flex items-center gap-1 mt-1">
+                          <button
+                            onClick={() => handleQuantityChange(item.drug._id, item.quantity - 1)}
+                            className="w-6 h-6 bg-white border border-purple-300 rounded text-sm"
+                          >
+                            -
+                          </button>
+                          <span className="w-5 text-center text-xs">{item.quantity}</span>
+                          <button
+                            onClick={() => handleQuantityChange(item.drug._id, item.quantity + 1)}
+                            className="w-6 h-6 bg-white border border-purple-300 rounded text-sm"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                      <div className="text-left mr-2">
+                        <p className="font-bold text-gray-900 text-xs">{(item.quantity * item.price).toFixed(2)}</p>
+                        <button onClick={() => handleRemoveItem(item.drug._id)} className="text-red-500 text-xs">✕</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {selectedItems.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center">
+                  <span className="text-xs text-gray-600">الإجمالي</span>
+                  <span className="font-bold text-purple-600">{calculateTotal().toFixed(2)} ل.س</span>
+                </div>
+              )}
             </div>
+
+            {/* Müşteri Formu */}
+            <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+              <h3 className="font-semibold text-gray-900 text-sm mb-3">معلومات العميل</h3>
+              <div className="space-y-3">
+                <input
+                  type="text"
+                  placeholder="الاسم *"
+                  className="w-full h-10 px-3 bg-gray-50 border border-gray-200 rounded-lg text-sm"
+                  value={customerInfo.name}
+                  onChange={(e) => setCustomerInfo({...customerInfo, name: e.target.value})}
+                  required
+                />
+                <input
+                  type="tel"
+                  placeholder="الهاتف"
+                  className="w-full h-10 px-3 bg-gray-50 border border-gray-200 rounded-lg text-sm"
+                  value={customerInfo.phone}
+                  onChange={(e) => setCustomerInfo({...customerInfo, phone: e.target.value})}
+                />
+                <select
+                  className="w-full h-10 px-3 bg-gray-50 border border-gray-200 rounded-lg text-sm"
+                  value={customerInfo.paymentMethod}
+                  onChange={(e) => setCustomerInfo({...customerInfo, paymentMethod: e.target.value})}
+                >
+                  <option value="نقدي">💰 نقدي</option>
+                  <option value="بطاقة ائتمان">💳 بطاقة</option>
+                  <option value="تحويل بنكي">🏦 تحويل</option>
+                </select>
+                <button
+                  type="submit"
+                  disabled={loading || selectedItems.length === 0 || !customerInfo.name.trim()}
+                  className="w-full h-11 bg-purple-500 text-white rounded-lg text-sm font-medium disabled:bg-gray-200 disabled:text-gray-500"
+                >
+                  {loading ? 'جاري...' : '✅ إتمام البيع'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>

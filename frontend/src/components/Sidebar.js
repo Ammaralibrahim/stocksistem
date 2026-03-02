@@ -4,17 +4,21 @@ import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { logout, getUser } from '@/lib/auth'
+import { logout, getUser } from '@/lib/auth'  
 import toast from 'react-hot-toast'
 
+// components/Sidebar.tsx (جزء من navigation)
 const navigation = [
   { name: 'لوحة التحكم', href: '/', icon: '📊', desc: 'الإحصائيات العامة' },
   { name: 'الأدوية', href: '/drugs', icon: '💊', desc: 'جميع مخزون الأدوية' },
   { name: 'دواء جديد', href: '/drugs/new', icon: '✨', desc: 'إضافة دواء جديد' },
   { name: 'الطلبيات', href: '/orders', icon: '📋', desc: 'سجل الطلبيات' },
   { name: 'طلب جديد', href: '/orders/new', icon: '🚀', desc: 'إنشاء طلب جديد' },
+  { name: 'العربة', href: '/cart', icon: '🚚', desc: 'عربة التوزيع' },
+  { name: 'تحميل للعربة', href: '/cart/load', icon: '📦', desc: 'تحميل منتجات' },
+  { name: 'بيع سريع', href: '/cart/sale', icon: '💰', desc: 'بيع من العربة' },
   { name: 'بحث', href: '/search', icon: '🔍', desc: 'بحث مفصل' },
-]
+];
 
 // أيقونة خروج SVG حديثة (من Heroicons)
 const LogoutIcon = () => (

@@ -186,11 +186,11 @@ router.delete('/:id', auth, async (req, res) => {
   }
 });
 
-// الحصول على أدوية المخزون المنخفض
+// الحصول على أدوية المخزون المنخفض (باستخدام lowStockThreshold)
 router.get('/low-stock', auth, async (req, res) => {
   try {
     const drugs = await Drug.find({ 
-      stock: { $lte: 10 } 
+      $expr: { $lte: [ "$stock", "$lowStockThreshold" ] }
     }).sort({ stock: 1 });
     
     res.json(drugs);

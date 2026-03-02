@@ -5,7 +5,7 @@ const Cart = require('../models/Cart');
 const auth = require('../middlewares/auth');
 const router = express.Router();
 
-// Dashboard istatistikleri (güncellendi)
+// Dashboard istatistikleri
 router.get('/stats', auth, async (req, res) => {
   try {
     const today = new Date();
@@ -65,7 +65,7 @@ router.get('/stats', auth, async (req, res) => {
     };
     
     // Araba bilgileri
-    const activeCart = await Cart.findOne({ status: 'aktif' })
+    const activeCart = await Cart.findOne({ status: 'نشطة' })
       .populate('items.drug', 'name');
     
     // Arabadan satılan ürünler
@@ -100,15 +100,22 @@ router.get('/stats', auth, async (req, res) => {
       expiryDate: { $lte: thirtyDaysFromNow, $gte: new Date() }
     }).sort({ expiryDate: 1 }).limit(5);
     
+    // Son eklenen 5 ilaç
+    const recentDrugs = await Drug.find().sort({ createdAt: -1 }).limit(5);
+    
     res.json({
       todayOrders,
       todaySales,
       totalDrugs,
-      stockData,
-      activeCart,
-      cartSales,
+      totalStock: stockData.totalStock,
+      totalStockValue: stockData.totalValue,
+      lowStockCount: lowStockDrugs.length,
+      expiringCount: expiringDrugs.length,
+      recentDrugs,
       lowStockDrugs,
-      expiringDrugs
+      expiringDrugs,
+      activeCart,
+      cartSales
     });
   } catch (error) {
     console.error('Dashboard stats error:', error);
@@ -122,7 +129,7 @@ router.get('/stats', auth, async (req, res) => {
 // Araba dashboard'u
 router.get('/cart-stats', auth, async (req, res) => {
   try {
-    const carts = await Cart.find({ status: 'aktif' })
+    const carts = await Cart.find({ status: 'نشطة' })
       .populate('items.drug', 'name price expiryDate');
     
     // Arabadaki kritik ürünler (yakın tarihli)
