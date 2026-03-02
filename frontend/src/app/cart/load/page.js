@@ -132,7 +132,7 @@ export default function LoadToCartPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedDrug, setSelectedDrug] = useState(null)
   const [quantity, setQuantity] = useState('1')
-  const [barcode, setBarcode] = useState('')
+  // const [barcode, setBarcode] = useState('')   // 👈 معلق مؤقتًا
   const [pageLoading, setPageLoading] = useState(true)
 
   useEffect(() => {
@@ -173,7 +173,7 @@ export default function LoadToCartPage() {
       toast.success(`${qty} وحدة من ${selectedDrug.name} تم تحميلها إلى العربة!`)
       setSelectedDrug(null)
       setQuantity('1')
-      setBarcode('')
+      // setBarcode('')
       fetchData()
     } catch (error) {
       console.error('خطأ في التحميل:', error)
@@ -183,27 +183,27 @@ export default function LoadToCartPage() {
     }
   }, [selectedDrug, quantity, cart])
 
-  const handleBarcodeLoad = useCallback(async () => {
-    if (!barcode || !quantity || parseInt(quantity) <= 0) {
-      toast.error('الرجاء إدخال الباركود والكمية')
-      return
-    }
+  // const handleBarcodeLoad = useCallback(async () => {
+  //   if (!barcode || !quantity || parseInt(quantity) <= 0) {
+  //     toast.error('الرجاء إدخال الباركود والكمية')
+  //     return
+  //   }
 
-    setLoading(true)
-    try {
-      await api.cart.loadByBarcode(barcode, parseInt(quantity))
-      toast.success(`${quantity} وحدة تم تحميلها بالباركود!`)
-      setBarcode('')
-      setQuantity('1')
-      setSelectedDrug(null)
-      fetchData()
-    } catch (error) {
-      console.error('خطأ في تحميل الباركود:', error)
-      toast.error(error.message || 'فشل تحميل الباركود')
-    } finally {
-      setLoading(false)
-    }
-  }, [barcode, quantity])
+  //   setLoading(true)
+  //   try {
+  //     await api.cart.loadByBarcode(barcode, parseInt(quantity))
+  //     toast.success(`${quantity} وحدة تم تحميلها بالباركود!`)
+  //     setBarcode('')
+  //     setQuantity('1')
+  //     setSelectedDrug(null)
+  //     fetchData()
+  //   } catch (error) {
+  //     console.error('خطأ في تحميل الباركود:', error)
+  //     toast.error(error.message || 'فشل تحميل الباركود')
+  //   } finally {
+  //     setLoading(false)
+  //   }
+  // }, [barcode, quantity])
 
   const filteredDrugs = useMemo(() => {
     if (!searchTerm.trim()) return drugs.filter(d => (d.stock || 0) > 0)
@@ -222,23 +222,15 @@ export default function LoadToCartPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-3 md:p-4" dir="rtl">
       <div className="max-w-6xl mx-auto">
-        {/* Başlık ve tümünü boşalt butonu */}
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <Link 
-              href="/cart" 
-              className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors"
-            >
-              <span className="text-lg">←</span>
-            </Link>
-            <h1 className="text-xl font-bold text-gray-900">📦 تحميل إلى العربة</h1>
-          </div>
-          <Link
-            href="/cart"
-            className="px-4 h-9 bg-amber-500 text-white rounded-lg text-sm font-medium flex items-center gap-1 hover:bg-amber-600"
+        {/* Başlık */}
+        <div className="mb-5 flex items-center gap-2">
+          <Link 
+            href="/cart" 
+            className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors"
           >
-            <span>🔄</span> تفريغ الكل
+            <span className="text-lg">←</span>
           </Link>
+          <h1 className="text-xl font-bold text-gray-900">📦 تحميل إلى العربة</h1>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -287,8 +279,8 @@ export default function LoadToCartPage() {
 
           {/* Sağ panel: Barcode ve araba bilgisi */}
           <div className="lg:col-span-1 space-y-4">
-            {/* Barcode ile yükleme */}
-            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+            {/* التحميل بالباركود - معطل حالياً */}
+            {/* <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
               <h3 className="font-semibold text-gray-900 mb-3 text-sm flex items-center gap-1">
                 <span>📷</span> التحميل بالباركود
               </h3>
@@ -315,7 +307,7 @@ export default function LoadToCartPage() {
                   </button>
                 </div>
               </div>
-            </div>
+            </div> */}
 
             {/* Aktif araba bilgisi */}
             {cart && (
