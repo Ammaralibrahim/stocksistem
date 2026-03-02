@@ -146,6 +146,7 @@ router.post('/unload', auth, async (req, res) => {
 });
 
 // تفريغ العربة بالكامل
+// تفريغ العربة بالكامل
 router.post('/unload-all', auth, async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -157,6 +158,7 @@ router.post('/unload-all', auth, async (req, res) => {
     if (!cart) throw new Error('لم يتم العثور على العربة');
     if (cart.items.length === 0) throw new Error('العربة فارغة بالفعل');
 
+    // إعادة المنتجات إلى المخزون
     for (const item of cart.items) {
       const drug = await Drug.findById(item.drug).session(session);
       if (drug) {
@@ -166,6 +168,11 @@ router.post('/unload-all', auth, async (req, res) => {
       }
     }
 
+    // حساب الإجماليات
+    const totalItems = cart.items.reduce((sum, item) => sum + item.quantity, 0);
+    const totalValue = cart.items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+
+    // إنشاء سجل التحويل مع تعيين totalItems و totalValue يدويًا
     const transfer = new CartTransfer({
       cart: cart._id,
       items: cart.items.map(item => ({
@@ -173,11 +180,14 @@ router.post('/unload-all', auth, async (req, res) => {
         quantity: item.quantity,
         price: item.price
       })),
+      totalItems,        // 👈 إضافة القيمة المحسوبة
+      totalValue,        // 👈 إضافة القيمة المحسوبة
       notes,
       transferredAt: Date.now()
     });
     await transfer.save({ session });
 
+    // تفريغ العربة
     cart.items = [];
     cart.lastUnloadedAt = Date.now();
     await cart.save({ session });
