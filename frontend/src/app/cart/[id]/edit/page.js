@@ -36,7 +36,7 @@ export default function EditCartPage() {
         notes: cart.notes || ''
       })
     } catch {
-      toast.error('فشل تحميل بيانات العربة')
+      toast.error('فشل تحميل بيانات السيارة')
       router.push('/cart')
     } finally {
       setLoading(false)
@@ -52,7 +52,7 @@ export default function EditCartPage() {
     setSaving(true)
     try {
       await api.cart.update(id, formData)
-      toast.success('تم تحديث معلومات العربة')
+      toast.success('تم تحديث معلومات السيارة')
       router.push('/cart')
     } catch {
       toast.error('فشل التحديث')
@@ -77,12 +77,12 @@ export default function EditCartPage() {
             <Link href="/cart" className="text-gray-600 hover:text-gray-900 ml-4">
               ←
             </Link>
-            <h1 className="text-2xl font-bold text-gray-900">تعديل معلومات العربة</h1>
+            <h1 className="text-2xl font-bold text-gray-900">تعديل معلومات السيارة</h1>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">اسم العربة</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">اسم السيارة</label>
               <input
                 name="name"
                 type="text"

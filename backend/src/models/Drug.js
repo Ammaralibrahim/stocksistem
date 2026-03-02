@@ -117,7 +117,7 @@ drugSchema.methods.updateStock = async function(warehouseChange = 0, cartChange 
     throw new Error(`مخزون المستودع غير كافٍ: ${this.name}. المتاح: ${this.stock}, المطلوب: ${Math.abs(warehouseChange)}`);
   }
   if (cartChange < 0 && Math.abs(cartChange) > this.cartStock) {
-    throw new Error(`مخزون العربة غير كافٍ: ${this.name}. مخزون العربة: ${this.cartStock}, المطلوب: ${Math.abs(cartChange)}`);
+    throw new Error(`مخزون السيارة غير كافٍ: ${this.name}. مخزون السيارة: ${this.cartStock}, المطلوب: ${Math.abs(cartChange)}`);
   }
   this.stock += warehouseChange;
   this.cartStock += cartChange;

@@ -17,7 +17,7 @@ const orderItemSchema = new mongoose.Schema({
   },
   source: {
     type: String,
-    enum: ['المستودع', 'العربة'],
+    enum: ['المستودع', 'السيارة'],
     default: 'المستودع'
   }
 });

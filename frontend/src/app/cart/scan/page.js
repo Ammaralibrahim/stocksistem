@@ -25,7 +25,7 @@ export default function ScanBarcodePage() {
       toast.success(`تم تحميل ${quantity} وحدة بنجاح`)
       setBarcode('')
       setQuantity('1')
-      // بعد نجاح التحميل، يمكن التوجيه إلى صفحة العربة
+      // بعد نجاح التحميل، يمكن التوجيه إلى صفحة السيارة
       setTimeout(() => router.push('/cart'), 1000)
     } catch (error) {
       toast.error(error.message || 'فشل تحميل الباركود')
@@ -39,7 +39,7 @@ export default function ScanBarcodePage() {
       <div className="max-w-md mx-auto">
         <div className="mb-6">
           <Link href="/cart" className="text-gray-600 hover:text-gray-900 inline-flex items-center">
-            <span className="ml-2">←</span> العودة إلى العربة
+            <span className="ml-2">←</span> العودة إلى السيارة
           </Link>
         </div>
 

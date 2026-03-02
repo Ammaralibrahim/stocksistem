@@ -339,8 +339,8 @@ export default function Dashboard() {
                   <span className="text-blue-600 text-sm md:text-base">🚚</span>
                 </div>
                 <div className="text-right">
-                  <h2 className="font-semibold text-gray-900 text-sm">العربة النشطة</h2>
-                  <p className="text-xs text-gray-500">معلومات العربة</p>
+                  <h2 className="font-semibold text-gray-900 text-sm">السيارة النشطة</h2>
+                  <p className="text-xs text-gray-500">معلومات السيارة</p>
                 </div>
               </div>
             </div>
@@ -349,7 +349,7 @@ export default function Dashboard() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-600">اسم العربة</span>
+                    <span className="text-gray-600">اسم السيارة</span>
                     <span className="font-medium">{stats.activeCart.name}</span>
                   </div>
                   <div className="flex justify-between items-center text-sm">
@@ -363,7 +363,7 @@ export default function Dashboard() {
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-600">قيمة العربة</span>
+                    <span className="text-gray-600">قيمة السيارة</span>
                     <span className="font-bold text-emerald-600">{(stats.activeCart.totalValue || 0).toFixed(2)} ل.س</span>
                   </div>
                   <div className="flex justify-between items-center text-sm">
@@ -387,7 +387,7 @@ export default function Dashboard() {
                 <div className="mt-3 p-2 bg-purple-50 rounded-lg border border-purple-100">
                   <div className="flex items-center justify-between">
                     <div className="text-right">
-                      <p className="text-xs text-gray-600">مبيعات العربة اليوم</p>
+                      <p className="text-xs text-gray-600">مبيعات السيارة اليوم</p>
                       <p className="text-sm font-bold text-purple-700">{stats.cartSales.count} طلب</p>
                     </div>
                     <div className="text-left">
@@ -679,7 +679,7 @@ export default function Dashboard() {
               <p className="font-medium text-gray-900 mb-1">نصائح سريعة</p>
               <p>• راقب المخزون المنخفض لتجنب النفاد</p>
               <p>• تحقق من تواريخ الانتهاء بانتظام</p>
-              <p>• استخدم العربة للبيع السريع</p>
+              <p>• استخدم السيارة للبيع السريع</p>
             </div>
           </div>
         </div>

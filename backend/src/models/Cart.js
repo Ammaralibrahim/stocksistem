@@ -25,7 +25,7 @@ const cartItemSchema = new mongoose.Schema({
 const cartSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, 'اسم العربة مطلوب'],
+    required: [true, 'اسم السيارة مطلوب'],
     trim: true,
     maxlength: 100,
     default: 'عربة التوزيع 1'
@@ -115,9 +115,9 @@ cartSchema.methods.removeItem = async function(drugId, quantity) {
   const itemIndex = this.items.findIndex(item => 
     item.drug.toString() === drugId.toString()
   );
-  if (itemIndex === -1) throw new Error('المنتج غير موجود في العربة');
+  if (itemIndex === -1) throw new Error('المنتج غير موجود في السيارة');
   const item = this.items[itemIndex];
-  if (item.quantity < quantity) throw new Error(`كمية غير كافية في العربة. المتاحة: ${item.quantity}`);
+  if (item.quantity < quantity) throw new Error(`كمية غير كافية في السيارة. المتاحة: ${item.quantity}`);
   item.quantity -= quantity;
   if (item.quantity <= 0) this.items.splice(itemIndex, 1);
   return this.save();

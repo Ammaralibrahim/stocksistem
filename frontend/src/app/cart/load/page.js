@@ -66,7 +66,7 @@ const ProductCard = ({ drug, onAddToCart }) => {
           <p className="text-[11px] text-gray-500 mt-0.5">{drug.price?.toFixed(2)} ل.س</p>
           <div className="flex items-center gap-2 mt-1 text-[10px]">
             <span className="text-gray-600">المخزون: {drug.stock}</span>
-            <span className="text-gray-600">العربة: {drug.cartStock || 0}</span>
+            <span className="text-gray-600">السيارة: {drug.cartStock || 0}</span>
           </div>
         </div>
       </div>
@@ -239,7 +239,7 @@ export default function LoadToCartPage() {
     }
 
     setLoading(true)
-    const toastId = toast.loading('جاري التحميل إلى العربة...')
+    const toastId = toast.loading('جاري التحميل إلى السيارة...')
 
     try {
       await Promise.all(
@@ -247,7 +247,7 @@ export default function LoadToCartPage() {
           api.cart.loadToCart(item.drug._id, item.quantity, cart?._id)
         )
       )
-      toast.success('تم تحميل جميع المنتجات إلى العربة', { id: toastId })
+      toast.success('تم تحميل جميع المنتجات إلى السيارة', { id: toastId })
       setCartItems([])
       fetchData()
     } catch (error) {
@@ -305,7 +305,7 @@ export default function LoadToCartPage() {
           >
             <span className="text-lg">←</span>
           </Link>
-          <h1 className="text-2xl font-semibold text-gray-900">تحميل إلى العربة</h1>
+          <h1 className="text-2xl font-semibold text-gray-900">تحميل إلى السيارة</h1>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -386,7 +386,7 @@ export default function LoadToCartPage() {
                     disabled={loading}
                     className="w-full mt-4 h-11 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 disabled:bg-gray-200 disabled:text-gray-500 transition-colors"
                   >
-                    {loading ? 'جاري التحميل...' : 'تحميل الكل إلى العربة'}
+                    {loading ? 'جاري التحميل...' : 'تحميل الكل إلى السيارة'}
                   </button>
                 </>
               )}
@@ -419,7 +419,7 @@ export default function LoadToCartPage() {
 
             {/* İpucu */}
             <div className="bg-blue-50 rounded-xl p-4 text-xs text-blue-700">
-              <p>💡 أضف المنتجات إلى السلة، ثم انقلها دفعة واحدة إلى العربة.</p>
+              <p>💡 أضف المنتجات إلى السلة، ثم انقلها دفعة واحدة إلى السيارة.</p>
             </div>
           </div>
         </div>

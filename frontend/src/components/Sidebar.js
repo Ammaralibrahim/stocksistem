@@ -14,9 +14,9 @@ const navigation = [
   { name: 'دواء جديد', href: '/drugs/new', icon: '✨', desc: 'إضافة دواء جديد' },
   { name: 'الطلبيات', href: '/orders', icon: '📋', desc: 'سجل الطلبيات' },
   { name: 'طلب جديد', href: '/orders/new', icon: '🚀', desc: 'إنشاء طلب جديد' },
-  { name: 'العربة', href: '/cart', icon: '🚚', desc: 'عربة التوزيع' },
+  { name: 'السيارة', href: '/cart', icon: '🚚', desc: 'عربة التوزيع' },
   { name: 'تحميل للعربة', href: '/cart/load', icon: '📦', desc: 'تحميل منتجات' },
-  { name: 'بيع سريع', href: '/cart/sale', icon: '💰', desc: 'بيع من العربة' },
+  { name: 'بيع سريع', href: '/cart/sale', icon: '💰', desc: 'بيع من السيارة' },
   { name: 'بحث', href: '/search', icon: '🔍', desc: 'بحث مفصل' },
 ];
 

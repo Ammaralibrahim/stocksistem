@@ -34,12 +34,12 @@ export default function UnloadPage() {
       setDrug(drugData)
       setCart(cartData)
 
-      // البحث عن العنصر في العربة مع التأكد من وجود الدواء
+      // البحث عن العنصر في السيارة مع التأكد من وجود الدواء
       const cartItem = cartData.items?.find(item => item.drug?._id === drugId)
       if (cartItem) {
         setQuantity(cartItem.quantity.toString())
       } else {
-        toast.error('هذا المنتج غير موجود في العربة')
+        toast.error('هذا المنتج غير موجود في السيارة')
         router.push('/cart')
       }
     } catch (error) {
@@ -57,7 +57,7 @@ export default function UnloadPage() {
 
     const cartItem = cart?.items?.find(item => item.drug?._id === drugId)
     if (!cartItem || qty > cartItem.quantity) {
-      toast.error(`الكمية المطلوبة أكبر من المتوفر في العربة (${cartItem?.quantity || 0})`)
+      toast.error(`الكمية المطلوبة أكبر من المتوفر في السيارة (${cartItem?.quantity || 0})`)
       return
     }
 
@@ -107,7 +107,7 @@ export default function UnloadPage() {
               <div>
                 <h2 className="font-medium text-gray-900">{drug.name}</h2>
                 <p className="text-sm text-gray-600">
-                  في العربة: <span className="font-bold">{maxQuantity}</span> وحدة
+                  في السيارة: <span className="font-bold">{maxQuantity}</span> وحدة
                 </p>
               </div>
             </div>
@@ -128,7 +128,7 @@ export default function UnloadPage() {
               placeholder={`الحد الأقصى: ${maxQuantity}`}
             />
             <p className="text-xs text-gray-500 mt-2 text-right">
-              المتوفر في العربة: {maxQuantity} وحدة
+              المتوفر في السيارة: {maxQuantity} وحدة
             </p>
           </div>
 

@@ -65,8 +65,8 @@ export default function CartSalePage() {
       const cartData = await api.cart.getActive()
       setCart(cartData)
     } catch (error) {
-      console.error('خطأ في تحميل العربة:', error)
-      toast.error('فشل تحميل العربة')
+      console.error('خطأ في تحميل السيارة:', error)
+      toast.error('فشل تحميل السيارة')
     } finally {
       setPageLoading(false)
     }
@@ -208,7 +208,7 @@ export default function CartSalePage() {
             >
               <span className="text-lg">←</span>
             </Link>
-            <h1 className="text-xl font-bold text-gray-900">🚚 بيع سريع من العربة</h1>
+            <h1 className="text-xl font-bold text-gray-900">🚚 بيع سريع من السيارة</h1>
           </div>
           <p className="text-sm text-gray-500 mt-1 pr-11">اختر المنتجات للبيع</p>
         </div>
@@ -218,7 +218,7 @@ export default function CartSalePage() {
           <div className="lg:col-span-2">
             <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-                <h3 className="font-semibold text-gray-900">المنتجات في العربة</h3>
+                <h3 className="font-semibold text-gray-900">المنتجات في السيارة</h3>
                 <div className="relative w-full sm:w-64">
                   <input
                     type="text"
@@ -235,7 +235,7 @@ export default function CartSalePage() {
                 {filteredItems.length === 0 ? (
                   <div className="col-span-2 text-center py-8 text-gray-500">
                     <span className="text-4xl">🚚</span>
-                    <p className="text-sm mt-2">العربة فارغة</p>
+                    <p className="text-sm mt-2">السيارة فارغة</p>
                     <Link href="/cart/load" className="inline-block mt-3 text-blue-500 text-sm underline">
                       تحميل منتجات
                     </Link>

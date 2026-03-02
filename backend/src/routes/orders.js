@@ -64,13 +64,13 @@ router.post('/', auth, async (req, res) => {
         throw new Error(`مخزون غير كافٍ: ${drug.name}. إجمالي المتاح: ${totalStock}, المطلوب: ${item.quantity}`);
       }
 
-      // إذا كانت العربة محددة والمخزون في العربة كافٍ
+      // إذا كانت السيارة محددة والمخزون في السيارة كافٍ
       if (cartUsed && drug.cartStock >= item.quantity) {
         processedItems.push({
           drug: item.drug,
           quantity: item.quantity,
           price: item.price,
-          source: 'العربة'
+          source: 'السيارة'
         });
       } 
       // إذا كان مخزون المستودع كافٍ
@@ -92,7 +92,7 @@ router.post('/', auth, async (req, res) => {
             drug: item.drug,
             quantity: fromCart,
             price: item.price,
-            source: 'العربة'
+            source: 'السيارة'
           });
         }
         if (fromWarehouse > 0) {
@@ -125,7 +125,7 @@ router.post('/', auth, async (req, res) => {
       const drug = await Drug.findById(item.drug).session(session);
       if (!drug) continue;
 
-      if (item.source === 'العربة') {
+      if (item.source === 'السيارة') {
         drug.cartStock -= item.quantity;
 
         if (cartUsed) {
@@ -178,13 +178,13 @@ router.put('/:id', auth, async (req, res) => {
       const drug = await Drug.findById(oldItem.drug).session(session);
       if (!drug) continue;
 
-      if (oldItem.source === 'العربة') {
+      if (oldItem.source === 'السيارة') {
         drug.cartStock += oldItem.quantity;
 
         if (existingOrder.cartUsed) {
           const cart = await Cart.findById(existingOrder.cartUsed).session(session);
           if (cart) {
-            // إعادة إلى العربة
+            // إعادة إلى السيارة
             const existingCartItem = cart.items.find(i => i.drug.toString() === drug._id.toString());
             if (existingCartItem) {
               existingCartItem.quantity += oldItem.quantity;
@@ -231,7 +231,7 @@ router.put('/:id', auth, async (req, res) => {
           drug: item.drug,
           quantity: item.quantity,
           price: item.price,
-          source: 'العربة'
+          source: 'السيارة'
         });
       } else if (drug.stock >= item.quantity) {
         processedItems.push({
@@ -249,7 +249,7 @@ router.put('/:id', auth, async (req, res) => {
             drug: item.drug,
             quantity: fromCart,
             price: item.price,
-            source: 'العربة'
+            source: 'السيارة'
           });
         }
         if (fromWarehouse > 0) {
@@ -282,7 +282,7 @@ router.put('/:id', auth, async (req, res) => {
       const drug = await Drug.findById(item.drug).session(session);
       if (!drug) continue;
 
-      if (item.source === 'العربة') {
+      if (item.source === 'السيارة') {
         drug.cartStock -= item.quantity;
 
         if (cartUsed) {
@@ -328,7 +328,7 @@ router.get('/:id', auth, async (req, res) => {
   }
 });
 
-// بيع سريع من العربة
+// بيع سريع من السيارة
 router.post('/cart-sale', auth, async (req, res) => {
   let retries = 3;
 
@@ -345,13 +345,13 @@ router.post('/cart-sale', auth, async (req, res) => {
 
         const cart = await Cart.findById(cartId).session(session);
         if (!cart) {
-          throw new Error('العربة غير موجودة');
+          throw new Error('السيارة غير موجودة');
         }
 
         for (const item of items) {
           const cartItem = cart.items.find(i => i.drug.toString() === item.drug);
           if (!cartItem || cartItem.quantity < item.quantity) {
-            throw new Error(`مخزون غير كافٍ في العربة: ${item.drug}`);
+            throw new Error(`مخزون غير كافٍ في السيارة: ${item.drug}`);
           }
         }
 
@@ -365,7 +365,7 @@ router.post('/cart-sale', auth, async (req, res) => {
           }
 
           if (drug.cartStock < item.quantity) {
-            throw new Error(`مخزون العربة غير كافٍ: ${drug.name}. مخزون العربة: ${drug.cartStock}, المطلوب: ${item.quantity}`);
+            throw new Error(`مخزون السيارة غير كافٍ: ${drug.name}. مخزون السيارة: ${drug.cartStock}, المطلوب: ${item.quantity}`);
           }
 
           drug.cartStock -= item.quantity;
@@ -379,7 +379,7 @@ router.post('/cart-sale', auth, async (req, res) => {
             drug: item.drug,
             quantity: item.quantity,
             price: item.price,
-            source: 'العربة'
+            source: 'السيارة'
           })),
           totalAmount: items.reduce((sum, item) => sum + (item.quantity * item.price), 0),
           customerName,
@@ -387,7 +387,7 @@ router.post('/cart-sale', auth, async (req, res) => {
           paymentMethod: paymentMethod || 'نقدي',
           cartUsed: cartId,
           status: 'تم التوصيل',
-          notes: 'بيع سريع من العربة'
+          notes: 'بيع سريع من السيارة'
         });
 
         await order.save({ session });
@@ -413,7 +413,7 @@ router.post('/cart-sale', auth, async (req, res) => {
         continue;
       }
 
-      console.error('خطأ في بيع العربة:', error);
+      console.error('خطأ في بيع السيارة:', error);
       return res.status(500).json({ message: error.message || 'خطأ في الخادم' });
     }
   }
@@ -449,7 +449,7 @@ router.delete('/:id', auth, async (req, res) => {
         continue;
       }
 
-      if (item.source === 'العربة') {
+      if (item.source === 'السيارة') {
         drug.cartStock += item.quantity;
 
         if (order.cartUsed) {

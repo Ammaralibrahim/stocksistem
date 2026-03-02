@@ -37,7 +37,7 @@ app.get('/api/health', (req, res) => {
     status: 'يعمل بشكل صحيح',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    features: ['المصادقة', 'الأدوية', 'الطلبات', 'لوحة التحكم', 'العربة']
+    features: ['المصادقة', 'الأدوية', 'الطلبات', 'لوحة التحكم', 'السيارة']
   })
 })
 

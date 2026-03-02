@@ -71,7 +71,7 @@ export default function CartPage() {
       const data = await api.cart.getActive()
       setCart(data)
     } catch {
-      toast.error('فشل تحميل العربة')
+      toast.error('فشل تحميل السيارة')
     } finally {
       setLoading(false)
     }
@@ -79,11 +79,11 @@ export default function CartPage() {
 
   const handleUnloadAll = async () => {
     if (!cart) {
-      toast.error('العربة غير موجودة')
+      toast.error('السيارة غير موجودة')
       return
     }
     if (!cart.items?.length) {
-      toast.error('العربة فارغة بالفعل')
+      toast.error('السيارة فارغة بالفعل')
       return
     }
 
@@ -116,7 +116,7 @@ export default function CartPage() {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-xl font-bold text-gray-900">🚚 العربة</h1>
+          <h1 className="text-xl font-bold text-gray-900">🚚 السيارة</h1>
           <Link
             href="/cart/load"
             className="inline-flex items-center justify-center px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium min-h-[44px]"
@@ -129,7 +129,7 @@ export default function CartPage() {
         <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4 shadow-sm">
           <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-4">
             <div>
-              <p className="text-xs text-gray-500">اسم العربة</p>
+              <p className="text-xs text-gray-500">اسم السيارة</p>
               <p className="font-medium text-sm">{cart?.name || 'عربة 1'}</p>
             </div>
             <div>
@@ -151,11 +151,11 @@ export default function CartPage() {
 
         {/* Products List */}
         <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-          <h2 className="font-semibold text-base mb-3">المنتجات في العربة</h2>
+          <h2 className="font-semibold text-base mb-3">المنتجات في السيارة</h2>
           {!cart?.items?.length ? (
             <div className="text-center py-8 text-gray-500">
               <span className="text-4xl">📭</span>
-              <p className="mt-2 text-sm">العربة فارغة</p>
+              <p className="mt-2 text-sm">السيارة فارغة</p>
               <Link href="/cart/load" className="inline-block mt-3 text-blue-500 text-sm underline">
                 تحميل منتجات
               </Link>
@@ -188,7 +188,7 @@ export default function CartPage() {
                           {item.drug?.name || 'منتج'}
                         </h3>
                         <p className="text-xs text-gray-500 mt-1">
-                          المخزون: {item.drug?.stock || 0} | العربة: {item.drug?.cartStock || 0}
+                          المخزون: {item.drug?.stock || 0} | السيارة: {item.drug?.cartStock || 0}
                         </p>
                         <div className="flex items-center justify-between mt-2">
                           <div>
@@ -258,7 +258,7 @@ export default function CartPage() {
         {/* Edit Cart Link */}
         <div className="mt-4 text-center">
           <Link href={`/cart/${cart?._id}/edit`} className="text-sm text-gray-600 underline">
-            تعديل معلومات العربة
+            تعديل معلومات السيارة
           </Link>
         </div>
       </div>

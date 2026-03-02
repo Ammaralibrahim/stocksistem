@@ -30,18 +30,18 @@ const getOrCreateActiveCart = async () => {
   return cart;
 };
 
-// الحصول على العربة النشطة (مع إنشاء تلقائي إذا لم توجد)
+// الحصول على السيارة النشطة (مع إنشاء تلقائي إذا لم توجد)
 router.get('/active', auth, async (req, res) => {
   try {
     const cart = await getOrCreateActiveCart();
     res.json(cart);
   } catch (error) {
-    console.error('خطأ في الحصول على العربة النشطة:', error);
+    console.error('خطأ في الحصول على السيارة النشطة:', error);
     res.status(500).json({ message: 'خطأ في الخادم' });
   }
 });
 
-// تحميل المنتج من المستودع إلى العربة
+// تحميل المنتج من المستودع إلى السيارة
 router.post('/load', auth, async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -58,7 +58,7 @@ router.post('/load', auth, async (req, res) => {
     let cart;
     if (cartId) cart = await Cart.findById(cartId).session(session);
     else cart = await Cart.findOne({ status: 'نشطة' }).session(session);
-    if (!cart) throw new Error('لم يتم العثور على العربة النشطة');
+    if (!cart) throw new Error('لم يتم العثور على السيارة النشطة');
 
     drug.stock -= quantity;
     drug.cartStock += quantity;
@@ -83,7 +83,7 @@ router.post('/load', auth, async (req, res) => {
 
     const updatedCart = await Cart.findById(cart._id).populate('items.drug', 'name price stock cartStock barcode expiryDate');
     res.json({
-      message: `تم تحميل ${quantity} وحدة من ${drug.name} إلى العربة`,
+      message: `تم تحميل ${quantity} وحدة من ${drug.name} إلى السيارة`,
       cart: updatedCart,
       drug
     });
@@ -95,7 +95,7 @@ router.post('/load', auth, async (req, res) => {
   }
 });
 
-// إعادة المنتج من العربة إلى المستودع
+// إعادة المنتج من السيارة إلى المستودع
 router.post('/unload', auth, async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -111,11 +111,11 @@ router.post('/unload', auth, async (req, res) => {
     let cart;
     if (cartId) cart = await Cart.findById(cartId).session(session);
     else cart = await Cart.findOne({ status: 'نشطة' }).session(session);
-    if (!cart) throw new Error('لم يتم العثور على العربة');
+    if (!cart) throw new Error('لم يتم العثور على السيارة');
 
     const cartItem = cart.items.find(item => item.drug.toString() === drugId);
     if (!cartItem || cartItem.quantity < quantity) {
-      throw new Error(`كمية غير كافية في العربة. المتاحة: ${cartItem ? cartItem.quantity : 0}`);
+      throw new Error(`كمية غير كافية في السيارة. المتاحة: ${cartItem ? cartItem.quantity : 0}`);
     }
 
     drug.stock += quantity;
@@ -145,8 +145,8 @@ router.post('/unload', auth, async (req, res) => {
   }
 });
 
-// تفريغ العربة بالكامل
-// تفريغ العربة بالكامل
+// تفريغ السيارة بالكامل
+// تفريغ السيارة بالكامل
 router.post('/unload-all', auth, async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -155,8 +155,8 @@ router.post('/unload-all', auth, async (req, res) => {
     let cart;
     if (cartId) cart = await Cart.findById(cartId).session(session);
     else cart = await Cart.findOne({ status: 'نشطة' }).session(session);
-    if (!cart) throw new Error('لم يتم العثور على العربة');
-    if (cart.items.length === 0) throw new Error('العربة فارغة بالفعل');
+    if (!cart) throw new Error('لم يتم العثور على السيارة');
+    if (cart.items.length === 0) throw new Error('السيارة فارغة بالفعل');
 
     // إعادة المنتجات إلى المخزون
     for (const item of cart.items) {
@@ -187,7 +187,7 @@ router.post('/unload-all', auth, async (req, res) => {
     });
     await transfer.save({ session });
 
-    // تفريغ العربة
+    // تفريغ السيارة
     cart.items = [];
     cart.lastUnloadedAt = Date.now();
     await cart.save({ session });
@@ -224,7 +224,7 @@ router.post('/load/barcode', auth, async (req, res) => {
     if (drug.stock < quantity) throw new Error(`كمية غير كافية في المخزون. المتاحة: ${drug.stock}`);
 
     const cart = await Cart.findOne({ status: 'نشطة' }).session(session);
-    if (!cart) throw new Error('لم يتم العثور على العربة النشطة');
+    if (!cart) throw new Error('لم يتم العثور على السيارة النشطة');
 
     drug.stock -= quantity;
     drug.cartStock += quantity;
@@ -249,7 +249,7 @@ router.post('/load/barcode', auth, async (req, res) => {
 
     const updatedCart = await Cart.findById(cart._id).populate('items.drug', 'name price stock cartStock barcode expiryDate');
     res.json({
-      message: `تم تحميل ${quantity} وحدة من ${drug.name} إلى العربة`,
+      message: `تم تحميل ${quantity} وحدة من ${drug.name} إلى السيارة`,
       cart: updatedCart,
       drug
     });
@@ -276,10 +276,10 @@ router.get('/', auth, async (req, res) => {
 router.get('/:id', auth, async (req, res) => {
   try {
     const cart = await Cart.findById(req.params.id).populate('items.drug', 'name price stock cartStock expiryDate barcode');
-    if (!cart) return res.status(404).json({ message: 'لم يتم العثور على العربة' });
+    if (!cart) return res.status(404).json({ message: 'لم يتم العثور على السيارة' });
     res.json(cart);
   } catch (error) {
-    console.error('خطأ في الحصول على العربة:', error);
+    console.error('خطأ في الحصول على السيارة:', error);
     res.status(500).json({ message: 'خطأ في الخادم' });
   }
 });
@@ -291,7 +291,7 @@ router.post('/', auth, async (req, res) => {
     await cart.save();
     res.status(201).json(cart);
   } catch (error) {
-    console.error('خطأ في إنشاء العربة:', error);
+    console.error('خطأ في إنشاء السيارة:', error);
     res.status(500).json({ message: 'خطأ في الخادم' });
   }
 });
@@ -301,10 +301,10 @@ router.put('/:id', auth, async (req, res) => {
   try {
     const cart = await Cart.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
       .populate('items.drug', 'name price stock cartStock barcode expiryDate');
-    if (!cart) return res.status(404).json({ message: 'لم يتم العثور على العربة' });
+    if (!cart) return res.status(404).json({ message: 'لم يتم العثور على السيارة' });
     res.json(cart);
   } catch (error) {
-    console.error('خطأ في تحديث العربة:', error);
+    console.error('خطأ في تحديث السيارة:', error);
     res.status(500).json({ message: 'خطأ في الخادم' });
   }
 });
@@ -313,14 +313,14 @@ router.put('/:id', auth, async (req, res) => {
 router.delete('/:id', auth, async (req, res) => {
   try {
     const cart = await Cart.findById(req.params.id);
-    if (!cart) return res.status(404).json({ message: 'لم يتم العثور على العربة' });
+    if (!cart) return res.status(404).json({ message: 'لم يتم العثور على السيارة' });
     if (cart.items.length > 0) {
       return res.status(400).json({ message: 'لا يمكن حذف عربة تحتوي على منتجات. قم بتفريغها أولاً.' });
     }
     await Cart.findByIdAndDelete(req.params.id);
-    res.json({ message: 'تم حذف العربة بنجاح' });
+    res.json({ message: 'تم حذف السيارة بنجاح' });
   } catch (error) {
-    console.error('خطأ في حذف العربة:', error);
+    console.error('خطأ في حذف السيارة:', error);
     res.status(500).json({ message: 'خطأ في الخادم' });
   }
 });
