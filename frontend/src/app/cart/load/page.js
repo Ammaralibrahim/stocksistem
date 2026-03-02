@@ -9,12 +9,12 @@ import toast from 'react-hot-toast'
 // ==================== Alt Bileşenler ====================
 
 const QuantityInput = ({ value, onChange, max, disabled }) => (
-  <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden h-9">
+  <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden h-10 bg-white">
     <button
       type="button"
       onClick={() => onChange(Math.min(max, (parseInt(value) || 1) + 1))}
       disabled={disabled || parseInt(value) >= max}
-      className="w-8 h-full bg-gray-100 hover:bg-gray-200 disabled:opacity-40 text-gray-700 text-lg"
+      className="w-8 h-full bg-gray-50 hover:bg-gray-100 disabled:opacity-40 text-gray-600 text-lg transition-colors"
     >
       +
     </button>
@@ -25,13 +25,13 @@ const QuantityInput = ({ value, onChange, max, disabled }) => (
       value={value}
       onChange={(e) => onChange(e.target.value)}
       disabled={disabled}
-      className="w-14 text-center border-x border-gray-200 h-full text-sm focus:outline-none"
+      className="w-14 text-center border-x border-gray-100 h-full text-sm focus:outline-none bg-white"
     />
     <button
       type="button"
       onClick={() => onChange(Math.max(1, (parseInt(value) || 1) - 1))}
       disabled={disabled || parseInt(value) <= 1}
-      className="w-8 h-full bg-gray-100 hover:bg-gray-200 disabled:opacity-40 text-gray-700 text-lg"
+      className="w-8 h-full bg-gray-50 hover:bg-gray-100 disabled:opacity-40 text-gray-600 text-lg transition-colors"
     >
       -
     </button>
@@ -52,26 +52,26 @@ const ProductCard = ({ drug, onAddToCart }) => {
       return
     }
     onAddToCart(drug, qty)
-    setLocalQty('1') // ekledikten sonra sıfırla
+    setLocalQty('1')
   }
 
   return (
-    <div className="border border-gray-200 rounded-xl p-3 bg-white hover:shadow-md transition-shadow">
-      <div className="flex items-start gap-2">
-        <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-          <span className="text-blue-600">💊</span>
+    <div className="bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-md transition-shadow">
+      <div className="flex items-start gap-3">
+        <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+          <span className="text-blue-600 text-lg">💊</span>
         </div>
         <div className="flex-1 min-w-0">
           <h4 className="font-medium text-gray-900 text-sm truncate">{drug.name}</h4>
           <p className="text-xs text-gray-500 mt-0.5">{drug.price?.toFixed(2)} ل.س</p>
-          <div className="flex items-center gap-2 mt-1 text-xs">
+          <div className="flex items-center gap-3 mt-1 text-xs">
             <span className="text-gray-600">المخزون: {drug.stock}</span>
             <span className="text-gray-600">العربة: {drug.cartStock || 0}</span>
           </div>
         </div>
       </div>
 
-      <div className="mt-3 flex items-center gap-2 border-t border-gray-100 pt-3">
+      <div className="mt-3 flex items-center gap-2">
         <QuantityInput
           value={localQty}
           onChange={setLocalQty}
@@ -80,19 +80,18 @@ const ProductCard = ({ drug, onAddToCart }) => {
         <button
           onClick={handleAdd}
           disabled={!localQty || parseInt(localQty) <= 0 || parseInt(localQty) > drug.stock}
-          className="flex-1 h-9 bg-emerald-500 text-white rounded-lg text-sm font-medium hover:bg-emerald-600 disabled:bg-gray-200 disabled:text-gray-500 transition-colors"
+          className="flex-1 h-10 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 disabled:bg-gray-200 disabled:text-gray-500 transition-colors"
         >
-          + إضافة إلى السلة
+          إضافة
         </button>
       </div>
     </div>
   )
 }
 
-const CartItem = ({ item, onIncrease, onDecrease, onRemove }) => {
+const CartItem = ({ item, onUpdate, onRemove }) => {
   const drug = item.drug
-  const maxAvailable = drug.stock + item.quantity // sepetteki miktar zaten ayrılmadı, stoktan düşmedi, bu yüzden maksimum stok + sepetteki? Hayır, stok fiziksel stok. Sepetteki ürünler henüz arabaya yüklenmedi, dolayısıyla stoktan düşülmedi. Maksimum, stok miktarıdır. Yani sepette zaten 5 varsa, stok 10 ise, toplamda 15 eklenemez, sadece stok kadar eklenebilir. Bu nedenle max = drug.stock (kalan stok) + item.quantity (sepetteki) olmalı ki toplamda stok aşılmasın. Ancak kullanıcı sepette miktarı artırdığında, aslında stoktan fazla talep etmemeli. Stok = 10, sepette 5 varsa, 5 daha eklenebilir (toplam 10). Yani max = drug.stock + item.quantity. Bu biraz kafa karıştırıcı. Daha basit: Kullanıcı sepette miktarı değiştirdiğinde, girilen değerin stoku aşmamasını kontrol edeceğiz. O yüzden input'un max'ı drug.stock + item.quantity olmalı. Ancak bu matematiksel olarak doğru. Uygulamada, sepetteki ürünler stoktan düşülmediği için, stok miktarı sabit kalır. Dolayısıyla toplam talep stoku geçmemeli: item.quantity (yeni) <= drug.stock + (eski item.quantity? hayır, eskiyi saymıyoruz, çünkü eski de stoktan talep edilecek). Aslında talep edilen toplam miktar = sepetteki tüm ürünlerin miktarı + yeni eklenecek. Ama biz her ürün için ayrı ayrı kontrol ediyoruz. En kolayı: Her ürün için max = drug.stock (kalan stok) + item.quantity. Yani eğer stok 10, sepette 3 varsa, kullanıcı en fazla 13 girebilir (3+10). Bu mantıklı çünkü stok 10, sepetteki 3 de stoktan gelecek, toplam 13. Ancak bu durumda stok aşımı olmaz. Evet, bu doğru. O halde max = drug.stock + item.quantity.
-  const maxQty = drug.stock + item.quantity
+  const maxQty = drug.stock // sepetteki toplam miktar stoku aşamaz
 
   const handleQtyChange = (newQty) => {
     const qty = parseInt(newQty)
@@ -104,32 +103,34 @@ const CartItem = ({ item, onIncrease, onDecrease, onRemove }) => {
       toast.error(`الحد الأقصى ${maxQty}`)
       return
     }
-    onIncrease(drug._id, qty) // aslında doğrudan miktarı set et
+    onUpdate(drug._id, qty)
   }
 
   return (
-    <div className="flex items-center justify-between p-2 bg-purple-50 rounded-lg">
+    <div className="flex items-center justify-between p-3 bg-blue-50 rounded-xl">
       <div className="flex-1 min-w-0">
-        <p className="font-medium text-gray-900 text-xs truncate">{drug.name}</p>
-        <div className="flex items-center gap-1 mt-1">
+        <p className="font-medium text-gray-900 text-sm truncate">{drug.name}</p>
+        <div className="flex items-center gap-2 mt-1">
           <button
             onClick={() => handleQtyChange(item.quantity - 1)}
-            className="w-6 h-6 bg-white border border-purple-300 rounded text-sm"
+            className="w-7 h-7 bg-white border border-blue-200 rounded-lg text-sm hover:bg-blue-100 transition-colors"
           >
             -
           </button>
-          <span className="w-5 text-center text-xs">{item.quantity}</span>
+          <span className="w-6 text-center text-sm font-medium">{item.quantity}</span>
           <button
             onClick={() => handleQtyChange(item.quantity + 1)}
-            className="w-6 h-6 bg-white border border-purple-300 rounded text-sm"
+            className="w-7 h-7 bg-white border border-blue-200 rounded-lg text-sm hover:bg-blue-100 transition-colors"
           >
             +
           </button>
         </div>
       </div>
-      <div className="text-left mr-2">
-        <p className="font-bold text-gray-900 text-xs">{(item.quantity * item.price).toFixed(2)}</p>
-        <button onClick={() => onRemove(drug._id)} className="text-red-500 text-xs">✕</button>
+      <div className="text-left mr-3">
+        <p className="font-bold text-gray-900 text-sm">{(item.quantity * item.price).toFixed(2)}</p>
+        <button onClick={() => onRemove(drug._id)} className="text-gray-400 hover:text-red-500 text-xs transition-colors">
+          ✕
+        </button>
       </div>
     </div>
   )
@@ -137,35 +138,24 @@ const CartItem = ({ item, onIncrease, onDecrease, onRemove }) => {
 
 const LoadSkeleton = () => (
   <div className="space-y-4 animate-pulse">
-    <div className="h-7 w-40 bg-gray-200 rounded-lg mb-6" />
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div className="lg:col-span-2">
-        <div className="bg-white rounded-2xl border border-gray-100 p-5">
-          <div className="h-5 w-32 bg-gray-200 rounded mb-4" />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[1, 2, 3, 4].map(i => (
-              <div key={i} className="border border-gray-200 rounded-xl p-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-12 h-12 bg-gray-200 rounded-lg" />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-4 w-3/4 bg-gray-200 rounded" />
-                    <div className="h-3 w-1/2 bg-gray-200 rounded" />
-                  </div>
-                </div>
+    <div className="h-7 w-40 bg-gray-200 rounded-xl mb-6" />
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div className="lg:col-span-2 space-y-4">
+        {[1, 2, 3, 4].map(i => (
+          <div key={i} className="bg-white rounded-2xl border border-gray-100 p-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-gray-200 rounded-xl" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 w-3/4 bg-gray-200 rounded" />
+                <div className="h-3 w-1/2 bg-gray-200 rounded" />
               </div>
-            ))}
+            </div>
           </div>
-        </div>
+        ))}
       </div>
-      <div className="lg:col-span-1">
-        <div className="bg-white rounded-2xl border border-gray-100 p-5">
-          <div className="h-5 w-24 bg-gray-200 rounded mb-4" />
-          <div className="space-y-3">
-            <div className="h-10 bg-gray-200 rounded-xl" />
-            <div className="h-10 bg-gray-200 rounded-xl" />
-            <div className="h-12 bg-gray-200 rounded-xl" />
-          </div>
-        </div>
+      <div className="lg:col-span-1 space-y-4">
+        <div className="bg-white rounded-2xl border border-gray-100 p-4 h-40" />
+        <div className="bg-white rounded-2xl border border-gray-100 p-4 h-24" />
       </div>
     </div>
   </div>
@@ -175,11 +165,11 @@ const LoadSkeleton = () => (
 
 export default function LoadToCartPage() {
   const router = useRouter()
-  const [loading, setLoading] = useState(false) // yükleme işlemi için
+  const [loading, setLoading] = useState(false)
   const [drugs, setDrugs] = useState([])
   const [cart, setCart] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
-  const [cartItems, setCartItems] = useState([]) // sepetteki ürünler { drug, quantity, price }
+  const [cartItems, setCartItems] = useState([]) // { drug, quantity, price }
   const [pageLoading, setPageLoading] = useState(true)
 
   useEffect(() => {
@@ -202,15 +192,13 @@ export default function LoadToCartPage() {
     }
   }
 
-  // Sepete ürün ekle (miktar belirtilerek)
   const addToCart = (drug, quantity) => {
     setCartItems(prev => {
       const existing = prev.find(item => item.drug._id === drug._id)
       if (existing) {
-        // Miktar kontrolü: yeni miktar stok + eski miktarı aşmamalı (yukarıdaki mantık)
         const newQty = existing.quantity + quantity
-        if (newQty > drug.stock + existing.quantity) {
-          toast.error(`لا يمكن إضافة ${quantity} وحدات. الحد الأقصى ${drug.stock + existing.quantity}`)
+        if (newQty > drug.stock) {
+          toast.error(`لا يمكن إضافة ${quantity} وحدات. الحد الأقصى ${drug.stock}`)
           return prev
         }
         return prev.map(item =>
@@ -226,10 +214,9 @@ export default function LoadToCartPage() {
         return [...prev, { drug, quantity, price: drug.price }]
       }
     })
-    toast.success(`تمت إضافة ${quantity} وحدة من ${drug.name} إلى السلة`, { icon: '🛒' })
+    toast.success(`تمت إضافة ${quantity} وحدة من ${drug.name}`, { icon: '🛒' })
   }
 
-  // Sepetteki ürün miktarını güncelle (doğrudan set)
   const updateCartItem = (drugId, newQuantity) => {
     setCartItems(prev =>
       prev.map(item =>
@@ -240,13 +227,11 @@ export default function LoadToCartPage() {
     )
   }
 
-  // Sepetten ürün çıkar
   const removeFromCart = (drugId) => {
     setCartItems(prev => prev.filter(item => item.drug._id !== drugId))
-    toast.success('تمت إزالة المنتج من السلة', { icon: '🗑️' })
+    toast.success('تمت إزالة المنتج من السلة')
   }
 
-  // Sepetteki tüm ürünleri arabaya yükle
   const handleLoadAll = async () => {
     if (cartItems.length === 0) {
       toast.error('السلة فارغة')
@@ -257,24 +242,21 @@ export default function LoadToCartPage() {
     const toastId = toast.loading('جاري التحميل إلى العربة...')
 
     try {
-      // Her ürün için API isteği (paralel)
-      const promises = cartItems.map(item =>
-        api.cart.loadToCart(item.drug._id, item.quantity, cart?._id)
+      await Promise.all(
+        cartItems.map(item =>
+          api.cart.loadToCart(item.drug._id, item.quantity, cart?._id)
+        )
       )
-      await Promise.all(promises)
-
-      toast.success('تم تحميل جميع المنتجات إلى العربة بنجاح!', { id: toastId })
-      setCartItems([]) // sepeti boşalt
-      fetchData() // güncel stokları ve arabayı getir
+      toast.success('تم تحميل جميع المنتجات إلى العربة', { id: toastId })
+      setCartItems([])
+      fetchData()
     } catch (error) {
-      console.error('خطأ في التحميل:', error)
-      toast.error(error.message || 'فشل تحميل بعض المنتجات', { id: toastId })
+      toast.error(error.message || 'فشل التحميل', { id: toastId })
     } finally {
       setLoading(false)
     }
   }
 
-  // Filtrelenmiş ürünler (stok > 0)
   const filteredDrugs = useMemo(() => {
     if (!searchTerm.trim()) return drugs.filter(d => (d.stock || 0) > 0)
     const lower = searchTerm.toLowerCase()
@@ -287,7 +269,6 @@ export default function LoadToCartPage() {
     )
   }, [drugs, searchTerm])
 
-  // Sepet özeti
   const cartSummary = useMemo(() => {
     const totalItems = cartItems.reduce((acc, item) => acc + item.quantity, 0)
     const totalValue = cartItems.reduce((acc, item) => acc + item.quantity * item.price, 0)
@@ -297,128 +278,116 @@ export default function LoadToCartPage() {
   if (pageLoading) return <LoadSkeleton />
 
   return (
-    <div className="min-h-screen bg-gray-50 p-3 md:p-4" dir="rtl">
+    <div className="min-h-screen bg-gray-50 p-4 md:p-5" dir="rtl">
       <div className="max-w-7xl mx-auto">
-        {/* Başlık */}
-        <div className="mb-5 flex items-center gap-2">
+        {/* Header */}
+        <div className="mb-6 flex items-center gap-3">
           <Link
             href="/cart"
-            className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors"
+            className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors"
           >
             <span className="text-lg">←</span>
           </Link>
-          <h1 className="text-xl font-bold text-gray-900">📦 تحميل إلى العربة</h1>
+          <h1 className="text-2xl font-semibold text-gray-900">تحميل إلى العربة</h1>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          {/* Sol: Ürün listesi */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-                <h3 className="font-semibold text-gray-900">المنتجات المتوفرة</h3>
-                <div className="relative w-full sm:w-64">
-                  <input
-                    type="text"
-                    className="w-full h-10 pr-9 pl-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                    placeholder="ابحث بالاسم أو الباركود..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                  <span className="absolute right-3 top-2.5 text-gray-400 text-sm">🔍</span>
-                </div>
-              </div>
+          {/* Ürün Listesi */}
+          <div className="lg:col-span-2 space-y-4">
+            {/* Arama */}
+            <div className="relative">
+              <input
+                type="text"
+                className="w-full h-12 pr-10 pl-4 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                placeholder="ابحث بالاسم أو الباركود..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <span className="absolute right-3 top-3 text-gray-400">🔍</span>
+            </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[600px] overflow-y-auto p-1">
-                {filteredDrugs.length === 0 ? (
-                  <div className="col-span-2 text-center py-10 text-gray-500">
-                    <span className="text-4xl">💊</span>
-                    <p className="text-sm mt-2">لا توجد منتجات متوفرة</p>
-                  </div>
-                ) : (
-                  filteredDrugs.map((drug) => (
-                    <ProductCard
-                      key={drug._id}
-                      drug={drug}
-                      onAddToCart={addToCart}
-                    />
-                  ))
-                )}
-              </div>
+            {/* Ürün Kartları */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {filteredDrugs.length === 0 ? (
+                <div className="col-span-2 text-center py-12 text-gray-500 bg-white rounded-2xl border border-gray-100">
+                  <span className="text-5xl">💊</span>
+                  <p className="text-sm mt-3">لا توجد منتجات متوفرة</p>
+                </div>
+              ) : (
+                filteredDrugs.map((drug) => (
+                  <ProductCard
+                    key={drug._id}
+                    drug={drug}
+                    onAddToCart={addToCart}
+                  />
+                ))
+              )}
             </div>
           </div>
 
-          {/* Sağ panel: Sepet ve araba bilgisi */}
-          <div className="lg:col-span-1 space-y-4">
+          {/* Sağ Panel: Sepet + Araba Bilgisi */}
+          <div className="space-y-4">
             {/* Sepet */}
-            <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-gray-900 text-sm">🛒 السلة ({cartSummary.totalItems})</h3>
+            <div className="bg-white rounded-2xl border border-gray-100 p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-medium text-gray-900">🛒 السلة</h3>
                 {cartItems.length > 0 && (
                   <button
                     onClick={() => setCartItems([])}
-                    className="text-xs text-red-600 hover:underline"
+                    className="text-xs text-gray-500 hover:text-red-500 transition-colors"
                   >
-                    تفريغ السلة
+                    تفريغ
                   </button>
                 )}
               </div>
 
               {cartItems.length === 0 ? (
-                <div className="text-center py-6 text-gray-500">
-                  <span className="text-3xl">🛒</span>
-                  <p className="text-xs mt-2">السلة فارغة، أضف منتجات من اليسار</p>
+                <div className="text-center py-8 text-gray-400">
+                  <span className="text-4xl">🛒</span>
+                  <p className="text-xs mt-2">السلة فارغة</p>
                 </div>
               ) : (
-                <div className="space-y-2 max-h-60 overflow-y-auto mb-3">
-                  {cartItems.map((item) => (
-                    <CartItem
-                      key={item.drug._id}
-                      item={item}
-                      onIncrease={(id, qty) => updateCartItem(id, qty)}
-                      onDecrease={(id) => {
-                        const current = cartItems.find(i => i.drug._id === id)
-                        if (current.quantity > 1) {
-                          updateCartItem(id, current.quantity - 1)
-                        } else {
-                          removeFromCart(id)
-                        }
-                      }}
-                      onRemove={removeFromCart}
-                    />
-                  ))}
-                </div>
-              )}
-
-              {cartItems.length > 0 && (
                 <>
-                  <div className="flex justify-between items-center pt-2 border-t border-gray-200 text-sm">
-                    <span className="text-gray-600">الإجمالي:</span>
-                    <span className="font-bold text-purple-600">{cartSummary.totalValue.toFixed(2)} ل.س</span>
+                  <div className="space-y-2 max-h-80 overflow-y-auto mb-4">
+                    {cartItems.map((item) => (
+                      <CartItem
+                        key={item.drug._id}
+                        item={item}
+                        onUpdate={updateCartItem}
+                        onRemove={removeFromCart}
+                      />
+                    ))}
                   </div>
+
+                  <div className="flex justify-between items-center pt-3 border-t border-gray-100 text-sm">
+                    <span className="text-gray-600">الإجمالي</span>
+                    <span className="font-semibold text-blue-600">{cartSummary.totalValue.toFixed(2)} ل.س</span>
+                  </div>
+
                   <button
                     onClick={handleLoadAll}
-                    disabled={loading || cartItems.length === 0}
-                    className="w-full mt-3 h-11 bg-purple-500 text-white rounded-lg text-sm font-medium hover:bg-purple-600 disabled:bg-gray-200 disabled:text-gray-500 transition-colors"
+                    disabled={loading}
+                    className="w-full mt-4 h-11 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 disabled:bg-gray-200 disabled:text-gray-500 transition-colors"
                   >
-                    {loading ? 'جاري التحميل...' : '⬆️ تحميل الكل إلى العربة'}
+                    {loading ? 'جاري التحميل...' : 'تحميل الكل إلى العربة'}
                   </button>
                 </>
               )}
             </div>
 
-            {/* Aktif araba bilgisi */}
+            {/* Aktif Araba */}
             {cart && (
-              <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+              <div className="bg-white rounded-2xl border border-gray-100 p-5">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
                     <span className="text-blue-600">🚚</span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-gray-900 text-sm truncate">{cart.name}</h4>
+                  <div>
+                    <h4 className="font-medium text-gray-900 text-sm">{cart.name}</h4>
                     <p className="text-xs text-gray-500">{cart.driverName || 'بدون سائق'}</p>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-2 mt-3 text-xs">
+                <div className="grid grid-cols-2 gap-3 mt-3 text-xs">
                   <div>
                     <span className="text-gray-500">المنتجات:</span>
                     <span className="mr-1 font-medium">{cart.totalItems || 0}</span>
@@ -432,8 +401,8 @@ export default function LoadToCartPage() {
             )}
 
             {/* İpucu */}
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-700">
-              <p>💡 أضف المنتجات إلى السلة أولاً، ثم انقر "تحميل الكل" لنقلها دفعة واحدة إلى العربة.</p>
+            <div className="bg-blue-50 rounded-xl p-4 text-xs text-blue-700">
+              <p>💡 أضف المنتجات إلى السلة، ثم انقلها دفعة واحدة إلى العربة.</p>
             </div>
           </div>
         </div>
