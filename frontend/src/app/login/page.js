@@ -13,7 +13,7 @@ export default function LoginPage() {
   const [initializing, setInitializing] = useState(false)
   const [formData, setFormData] = useState({
     username: 'admin',
-    password: ''
+    password: 'admin123'
   })
   const [serverStatus, setServerStatus] = useState({
     backend: false,
@@ -89,7 +89,7 @@ export default function LoginPage() {
             },
             body: JSON.stringify({
               username: 'admin',
-              password: 'admin999'
+              password: 'admin123'
             })
           })
           
@@ -294,7 +294,7 @@ export default function LoginPage() {
                   </div>
                   <div className="flex items-center justify-between bg-white p-2 sm:p-3 rounded-lg border border-gray-200">
                     <span className="text-xs sm:text-sm text-gray-600">كلمة المرور</span>
-                    <code className="text-xs sm:text-sm font-mono bg-gray-100 px-2 py-1 rounded text-gray-900">admin999</code>
+                    <code className="text-xs sm:text-sm font-mono bg-gray-100 px-2 py-1 rounded text-gray-900">admin123</code>
                   </div>
                 </div>
 
