@@ -15,12 +15,15 @@ const DeleteIcon = () => <span>🗑️</span>
 const EditIcon = () => <span>✏️</span>
 const ViewIcon = () => <span>👁️</span>
 
-const StockStatusBadge = ({ stock }) => {
+// Güncellenmiş StockStatusBadge - drug objesini alır
+const StockStatusBadge = ({ drug }) => {
   const status = useMemo(() => {
-    if (stock <= 0) return { text: 'نفذ', class: 'bg-red-100 text-red-800' }
-    if (stock <= 10) return { text: 'منخفض', class: 'bg-amber-100 text-amber-800' }
+    const total = (drug.stock || 0) + (drug.cartStock || 0)
+    if (total === 0) return { text: 'نفذ', class: 'bg-red-100 text-red-800' }
+    if (drug.stock === 0 && drug.cartStock > 0) return { text: 'الكل في السيارة', class: 'bg-blue-100 text-blue-800' }
+    if (drug.stock <= (drug.lowStockThreshold || 10)) return { text: 'منخفض', class: 'bg-amber-100 text-amber-800' }
     return { text: 'متوفر', class: 'bg-emerald-100 text-emerald-800' }
-  }, [stock])
+  }, [drug])
   return (
     <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${status.class}`}>
       {status.text}
@@ -247,7 +250,7 @@ export default function DrugsPage() {
           </div>
         </div>
 
-        {/* Mobil Kartlar - Tümü gösterilir, sayfalama yok */}
+        {/* Mobil Kartlar */}
         <div className="block md:hidden">
           {loading ? (
             <div className="space-y-2">
@@ -271,7 +274,7 @@ export default function DrugsPage() {
                     <div><span className="text-gray-500">انتهاء:</span><span className="mr-1 font-medium">{drug.expiryDate ? format(new Date(drug.expiryDate), 'dd/MM') : '-'}</span></div>
                   </div>
                   <div className="flex items-center justify-between mt-2">
-                    <StockStatusBadge stock={drug.stock} />
+                    <StockStatusBadge drug={drug} />
                     <div className="flex gap-3">
                       <button onClick={() => router.push(`/drugs/${drug._id}`)} className="w-11 h-11 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 flex items-center justify-center text-base" title="عرض">👁️</button>
                       <button onClick={() => router.push(`/drugs/${drug._id}/edit`)} className="w-11 h-11 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-600 flex items-center justify-center text-base" title="تعديل">✏️</button>
@@ -290,7 +293,7 @@ export default function DrugsPage() {
           )}
         </div>
 
-        {/* Masaüstü Tablo - Tümü gösterilir, sayfalama yok */}
+        {/* Masaüstü Tablo */}
         <div className="hidden md:block bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[800px] text-xs">
@@ -328,7 +331,9 @@ export default function DrugsPage() {
                       <td className="py-2 px-2">{drug.stock}</td>
                       <td className="py-2 px-2 font-medium">{drug.price} ل.س</td>
                       <td className="py-2 px-2">{drug.expiryDate ? format(new Date(drug.expiryDate), 'dd/MM/yyyy') : '-'}</td>
-                      <td className="py-2 px-2"><StockStatusBadge stock={drug.stock} /></td>
+                      <td className="py-2 px-2">
+                        <StockStatusBadge drug={drug} />
+                      </td>
                       <td className="py-2 px-2">
                         <div className="flex gap-3">
                           <button onClick={() => router.push(`/drugs/${drug._id}`)} className="w-11 h-11 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 flex items-center justify-center text-base" title="عرض">👁️</button>
