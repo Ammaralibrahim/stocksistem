@@ -54,10 +54,10 @@ router.get('/init', async (req, res) => {
       });
     }
     
-    // Admin kullanıcısını oluştur (varsayılan şifre: admin999)
+    // Admin kullanıcısını oluştur
     const adminUser = new User({
       username: 'admin',
-      password: 'admin999', // Artık bu şifre kullanılacak
+      password: 'admin999',
       isAdmin: true
     });
     
@@ -78,9 +78,6 @@ router.post('/setup', async (req, res) => {
   try {
     const { username, password } = req.body;
     
-    // Eğer şifre belirtilmemişse varsayılan 'admin999' kullan
-    const finalPassword = password || 'admin999';
-    
     // Kullanıcı var mı kontrol et
     const existingUser = await User.findOne({ username });
     if (existingUser) {
@@ -90,7 +87,7 @@ router.post('/setup', async (req, res) => {
     // Yeni kullanıcı oluştur
     const newUser = new User({
       username: username || 'admin',
-      password: finalPassword,
+      password: password || 'admin999',
       isAdmin: true
     });
     
