@@ -57,7 +57,7 @@ router.get('/init', async (req, res) => {
     // Admin kullanıcısını oluştur
     const adminUser = new User({
       username: 'admin',
-      password: 'admin123',
+      password: 'admin999',
       isAdmin: true
     });
     
@@ -87,7 +87,7 @@ router.post('/setup', async (req, res) => {
     // Yeni kullanıcı oluştur
     const newUser = new User({
       username: username || 'admin',
-      password: password || 'admin123',
+      password: password || 'admin999',
       isAdmin: true
     });
     

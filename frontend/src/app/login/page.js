@@ -12,8 +12,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [initializing, setInitializing] = useState(false)
   const [formData, setFormData] = useState({
-    username: 'admin',
-    password: 'admin123'
+    username: '',
+    password: ''
   })
   const [serverStatus, setServerStatus] = useState({
     backend: false,
