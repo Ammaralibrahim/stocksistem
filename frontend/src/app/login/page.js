@@ -279,6 +279,39 @@ export default function LoginPage() {
               </div>
             )}
 
+            {/* بيانات التجربة */}
+            <div className="pt-5 sm:pt-6 border-t border-gray-100">
+              <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-3 sm:p-4 border border-gray-200">
+                <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                  <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                  <span className="text-xs sm:text-sm font-medium text-gray-700">بيانات التجربة</span>
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between bg-white p-2 sm:p-3 rounded-lg border border-gray-200">
+                    <span className="text-xs sm:text-sm text-gray-600">اسم المستخدم</span>
+                    <code className="text-xs sm:text-sm font-mono bg-gray-100 px-2 py-1 rounded text-gray-900">admin</code>
+                  </div>
+                  <div className="flex items-center justify-between bg-white p-2 sm:p-3 rounded-lg border border-gray-200">
+                    <span className="text-xs sm:text-sm text-gray-600">كلمة المرور</span>
+                    <code className="text-xs sm:text-sm font-mono bg-gray-100 px-2 py-1 rounded text-gray-900">admin999</code>
+                  </div>
+                </div>
+
+                <div className="mt-3 sm:mt-4 p-2 sm:p-3 bg-blue-50/50 rounded-lg border border-blue-100">
+                  <div className="flex items-start gap-2">
+                    <div className="mt-0.5">
+                      <div className="w-3 h-3 sm:w-4 sm:h-4 bg-blue-100 rounded-full flex items-center justify-center">
+                        <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-blue-500 rounded-full"></div>
+                      </div>
+                    </div>
+                    <p className="text-xs text-blue-800 leading-relaxed">
+                      تم تصميم النظام لاستخدام شخصين فقط. يوفر إدارة بسيطة وفعالة.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
