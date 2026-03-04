@@ -202,7 +202,7 @@ export default function CartPage() {
                           </div>
                           {expiryDate && <span className={`text-[10px] px-2 py-1 rounded-full ${expiryStatus}`}>{daysLeft <= 0 ? 'منتهي' : daysLeft <= 7 ? 'عاجل' : daysLeft <= 30 ? 'قريب' : 'آمن'}</span>}
                         </div>
-                        <div className="flex justify-end gap-2 mt-3">
+                        <div className="flex justify-end gap-4 mt-3">
                           <Link href={`/cart/unload?drugId=${item.drug?._id}`} className="w-9 h-9 rounded-lg bg-emerald-100 hover:bg-emerald-200 flex items-center justify-center transition-colors" title="إعادة إلى المستودع"><span className="text-emerald-600 text-sm">📥</span></Link>
                           <Link href={`/orders/new?drugId=${item.drug?._id}&source=cart`} className="w-9 h-9 rounded-lg bg-purple-100 hover:bg-purple-200 flex items-center justify-center transition-colors" title="بيع سريع"><span className="text-purple-600 text-sm">💰</span></Link>
                         </div>
