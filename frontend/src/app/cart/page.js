@@ -7,6 +7,11 @@ import api from '@/lib/api'
 import toast from 'react-hot-toast'
 import ConfirmModal from '@/components/ConfirmModal'
 
+// İkonlar (opsiyonel, dilerseniz react-icons kullanabilirsiniz)
+const SearchIcon = () => <span className="text-gray-400">🔍</span>
+const ClearIcon = () => <span className="text-gray-400">✕</span>
+const FilterIcon = () => <span>⚙️</span>
+
 const CartSkeleton = () => (
   <div className="space-y-3 animate-pulse">
     {/* Header Skeletoni */}
@@ -64,6 +69,12 @@ export default function CartPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [modal, setModal] = useState({ isOpen: false })
 
+  // Gelişmiş filtreleme state'leri
+  const [expiryFilter, setExpiryFilter] = useState('all') // 'all', 'expired', 'urgent', 'soon', 'safe'
+  const [categoryFilter, setCategoryFilter] = useState('')
+  const [sortBy, setSortBy] = useState('name') // 'name', 'price', 'expiry', 'cartQuantity', 'totalValue'
+  const [sortOrder, setSortOrder] = useState('asc') // 'asc', 'desc'
+
   useEffect(() => {
     fetchCart()
   }, [])
@@ -105,21 +116,94 @@ export default function CartPage() {
     }
   }
 
-  const filteredItems = useMemo(() => {
+  // Kategorileri çıkar (benzersiz)
+  const categories = useMemo(() => {
     if (!cart?.items) return []
-    if (!searchTerm.trim()) return cart.items
-    const lower = searchTerm.toLowerCase()
-    return cart.items.filter(item => {
-      const drug = item.drug
-      if (!drug) return false
-      return (
-        drug.name?.toLowerCase().includes(lower) ||
-        drug.barcode?.toLowerCase().includes(lower) ||
-        drug.category?.toLowerCase().includes(lower) ||
-        drug.serialNumber?.toLowerCase().includes(lower)
-      )
+    const cats = cart.items
+      .map(item => item.drug?.category)
+      .filter(Boolean)
+    return [...new Set(cats)]
+  }, [cart])
+
+  // Filtrelenmiş ve sıralanmış öğeler
+  const filteredAndSortedItems = useMemo(() => {
+    if (!cart?.items) return []
+
+    let items = [...cart.items]
+
+    // Arama filtresi
+    if (searchTerm.trim()) {
+      const lower = searchTerm.toLowerCase()
+      items = items.filter(item => {
+        const drug = item.drug
+        if (!drug) return false
+        return (
+          drug.name?.toLowerCase().includes(lower) ||
+          drug.barcode?.toLowerCase().includes(lower) ||
+          drug.category?.toLowerCase().includes(lower) ||
+          drug.serialNumber?.toLowerCase().includes(lower)
+        )
+      })
+    }
+
+    // Kategori filtresi
+    if (categoryFilter) {
+      items = items.filter(item => item.drug?.category === categoryFilter)
+    }
+
+    // Son kullanma filtresi
+    if (expiryFilter !== 'all') {
+      const today = new Date()
+      items = items.filter(item => {
+        if (!item.drug?.expiryDate) return false
+        const expiry = new Date(item.drug.expiryDate)
+        const daysLeft = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24))
+
+        if (expiryFilter === 'expired') return daysLeft <= 0
+        if (expiryFilter === 'urgent') return daysLeft > 0 && daysLeft <= 7
+        if (expiryFilter === 'soon') return daysLeft > 7 && daysLeft <= 30
+        if (expiryFilter === 'safe') return daysLeft > 30
+        return true
+      })
+    }
+
+    // Sıralama
+    items.sort((a, b) => {
+      let aVal, bVal
+      const drugA = a.drug || {}
+      const drugB = b.drug || {}
+
+      switch (sortBy) {
+        case 'name':
+          aVal = drugA.name || ''
+          bVal = drugB.name || ''
+          return sortOrder === 'asc'
+            ? aVal.localeCompare(bVal)
+            : bVal.localeCompare(aVal)
+        case 'price':
+          aVal = drugA.price || 0
+          bVal = drugB.price || 0
+          break
+        case 'expiry':
+          aVal = drugA.expiryDate ? new Date(drugA.expiryDate).getTime() : 0
+          bVal = drugB.expiryDate ? new Date(drugB.expiryDate).getTime() : 0
+          break
+        case 'cartQuantity':
+          aVal = a.quantity || 0
+          bVal = b.quantity || 0
+          break
+        case 'totalValue':
+          aVal = (a.quantity || 0) * (a.price || 0)
+          bVal = (b.quantity || 0) * (b.price || 0)
+          break
+        default:
+          return 0
+      }
+      return sortOrder === 'asc' ? aVal - bVal : bVal - aVal
     })
-  }, [cart, searchTerm])
+
+    return items
+  }, [cart, searchTerm, categoryFilter, expiryFilter, sortBy, sortOrder])
 
   if (loading) {
     return (
@@ -171,24 +255,123 @@ export default function CartPage() {
 
         {/* Products List */}
         <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-          {/* Başlık ve arama kutusu */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
-            <h2 className="font-semibold text-base">المنتجات في السيارة</h2>
-            <div className="relative w-full sm:w-64">
+          {/* Arama ve filtreleme alanı */}
+          <div className="space-y-3 mb-4">
+            {/* Arama kutusu */}
+            <div className="relative w-full">
               <input
                 type="text"
-                className="w-full h-9 pr-8 pl-8 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                placeholder="ابحث بالاسم، الباركود..."
+                className="w-full h-10 pr-9 pl-9 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                placeholder="ابحث بالاسم، الباركود، الفئة..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
-              <span className="absolute right-2.5 top-2 text-gray-400">🔍</span>
+              <span className="absolute right-3 top-2.5 text-gray-400">
+                <SearchIcon />
+              </span>
               {searchTerm && (
                 <button
                   onClick={() => setSearchTerm('')}
-                  className="absolute left-2 top-1.5 text-gray-400 w-5 h-5 flex items-center justify-center hover:bg-gray-100 rounded-full"
+                  className="absolute left-2 top-2 text-gray-400 w-6 h-6 flex items-center justify-center hover:bg-gray-100 rounded-full"
                 >
-                  ✕
+                  <ClearIcon />
+                </button>
+              )}
+            </div>
+
+            {/* Filtre satırı */}
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Son kullanma filtre butonları */}
+              <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
+                <button
+                  onClick={() => setExpiryFilter('all')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    expiryFilter === 'all' ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  الكل
+                </button>
+                <button
+                  onClick={() => setExpiryFilter('expired')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    expiryFilter === 'expired' ? 'bg-red-500 text-white' : 'text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  منتهي
+                </button>
+                <button
+                  onClick={() => setExpiryFilter('urgent')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    expiryFilter === 'urgent' ? 'bg-red-500 text-white' : 'text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  عاجل
+                </button>
+                <button
+                  onClick={() => setExpiryFilter('soon')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    expiryFilter === 'soon' ? 'bg-amber-500 text-white' : 'text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  قريب
+                </button>
+                <button
+                  onClick={() => setExpiryFilter('safe')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    expiryFilter === 'safe' ? 'bg-emerald-500 text-white' : 'text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  آمن
+                </button>
+              </div>
+
+              {/* Kategori filtresi */}
+              {categories.length > 0 && (
+                <select
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  className="h-9 px-2 bg-gray-50 border border-gray-200 rounded-lg text-sm"
+                >
+                  <option value="">كل الفئات</option>
+                  {categories.map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              )}
+
+              {/* Sıralama seçenekleri */}
+              <div className="flex items-center gap-1">
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="h-9 px-2 bg-gray-50 border border-gray-200 rounded-lg text-sm"
+                >
+                  <option value="name">الاسم</option>
+                  <option value="price">السعر</option>
+                  <option value="expiry">تاريخ الانتهاء</option>
+                  <option value="cartQuantity">الكمية في السيارة</option>
+                  <option value="totalValue">القيمة الإجمالية</option>
+                </select>
+                <button
+                  onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                  className="w-9 h-9 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center text-sm"
+                  title={sortOrder === 'asc' ? 'تصاعدي' : 'تنازلي'}
+                >
+                  {sortOrder === 'asc' ? '↑' : '↓'}
+                </button>
+              </div>
+
+              {/* Filtreleri temizle */}
+              {(searchTerm || categoryFilter || expiryFilter !== 'all') && (
+                <button
+                  onClick={() => {
+                    setSearchTerm('')
+                    setCategoryFilter('')
+                    setExpiryFilter('all')
+                  }}
+                  className="text-xs text-red-600 underline"
+                >
+                  مسح الكل
                 </button>
               )}
             </div>
@@ -197,7 +380,7 @@ export default function CartPage() {
           {/* Gösterilen ürün sayısı */}
           {cart?.items?.length > 0 && (
             <p className="text-xs text-gray-500 mb-3">
-              عرض {filteredItems.length} من {cart.items.length} منتج
+              عرض {filteredAndSortedItems.length} من {cart.items.length} منتج
             </p>
           )}
 
@@ -209,20 +392,24 @@ export default function CartPage() {
                 تحميل منتجات
               </Link>
             </div>
-          ) : filteredItems.length === 0 ? (
+          ) : filteredAndSortedItems.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <span className="text-4xl">🔍</span>
               <p className="mt-2 text-sm">لا توجد منتجات تطابق البحث</p>
               <button
-                onClick={() => setSearchTerm('')}
+                onClick={() => {
+                  setSearchTerm('')
+                  setCategoryFilter('')
+                  setExpiryFilter('all')
+                }}
                 className="mt-3 text-blue-500 text-sm underline"
               >
-                مسح البحث
+                مسح الفلاتر
               </button>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {filteredItems.map((item, idx) => {
+              {filteredAndSortedItems.map((item, idx) => {
                 const expiryDate = item.drug?.expiryDate ? new Date(item.drug.expiryDate) : null
                 const today = new Date()
                 const daysLeft = expiryDate ? Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24)) : null
@@ -234,7 +421,6 @@ export default function CartPage() {
                   else expiryStatus = 'text-emerald-600 bg-emerald-50'
                 }
 
-                // Depo, araba ve toplam stok değerleri
                 const warehouseStock = item.drug?.stock || 0
                 const cartStock = item.drug?.cartStock || 0
                 const totalStock = warehouseStock + cartStock
@@ -252,7 +438,6 @@ export default function CartPage() {
                         <h3 className="font-medium text-gray-900 text-sm truncate">
                           {item.drug?.name || 'منتج'}
                         </h3>
-                        {/* Yeni stok gösterimi: المستودع, السيارة, الإجمالي */}
                         <p className="text-xs text-gray-500 mt-1">
                           المستودع: {warehouseStock}  السيارة: {cartStock}  الإجمالي: {totalStock}
                         </p>
@@ -271,7 +456,6 @@ export default function CartPage() {
                             </span>
                           )}
                         </div>
-                        {/* Butonlar - gap-4 ile büyük boşluk */}
                         <div className="flex justify-end gap-4 mt-3">
                           <Link
                             href={`/cart/unload?drugId=${item.drug?._id}`}
