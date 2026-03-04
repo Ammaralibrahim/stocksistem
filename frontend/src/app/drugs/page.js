@@ -279,7 +279,7 @@ export default function DrugsPage() {
                   </div>
                   <div className="flex items-center justify-between mt-2">
                     <StockStatusBadge stock={drug.stock} />
-                    <div className="flex gap-1">
+                    <div className="flex gap-3">
                       <button onClick={() => router.push(`/drugs/${drug._id}`)} className="w-7 h-7 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 flex items-center justify-center text-xs">👁️</button>
                       <button onClick={() => router.push(`/drugs/${drug._id}/edit`)} className="w-7 h-7 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-600 flex items-center justify-center text-xs">✏️</button>
                       <button onClick={() => handleDelete(drug._id, drug.name)} className="w-7 h-7 rounded-lg bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center text-xs">🗑️</button>
