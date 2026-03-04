@@ -4,9 +4,9 @@ import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
-import { ar } from 'date-fns/locale'
 import api from '@/lib/api'
 import toast from 'react-hot-toast'
+import ConfirmModal from '@/components/ConfirmModal'
 
 // Icons
 const SearchIcon = () => <span className="text-gray-400">🔍</span>
@@ -76,31 +76,24 @@ export default function DrugsPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
 
-  // Varsayılan sıralama: createdAt artan (en eski ilk)
   const [sortBy, setSortBy] = useState('createdAt')
   const [sortOrder, setSortOrder] = useState('asc')
   const [categoryFilter, setCategoryFilter] = useState('')
   const [categories, setCategories] = useState([])
 
+  // Modal state
+  const [modal, setModal] = useState({ isOpen: false, type: null, payload: null })
+
   const fetchDrugs = useCallback(async () => {
     setLoading(true)
     try {
-      const params = {
-        sort: sortBy,
-        order: sortOrder
-      }
+      const params = { sort: sortBy, order: sortOrder }
       if (filter === 'low-stock') {
         params.minStock = 0
         params.maxStock = 10
-      } else if (filter === 'expiring') {
-        // client-side filtering
       }
-      if (categoryFilter) {
-        params.category = categoryFilter
-      }
-      if (searchTerm) {
-        params.search = searchTerm
-      }
+      if (categoryFilter) params.category = categoryFilter
+      if (searchTerm) params.search = searchTerm
 
       const data = await api.drugs.getAll(params)
       setDrugs(Array.isArray(data) ? data : [])
@@ -136,24 +129,45 @@ export default function DrugsPage() {
   }, [filteredDrugs, currentPage])
 
   const handleDelete = async (id, name) => {
-    if (!confirm(`حذف "${name}"؟`)) return
+    setModal({
+      isOpen: true,
+      type: 'delete',
+      payload: { id, name }
+    })
+  }
+
+  const confirmDelete = async () => {
+    const { id, name } = modal.payload
+    setModal({ ...modal, isOpen: false })
     try {
       await api.delete(`/drugs/${id}`)
       setDrugs(prev => prev.filter(d => d._id !== id))
-      toast.success('تم الحذف')
+      toast.success(`تم حذف "${name}"`)
     } catch {
       toast.error('فشل الحذف')
     }
   }
 
-  const handleBulkDelete = async () => {
-    if (selectedDrugs.length === 0) return toast.error('لم تختر أي دواء')
-    if (!confirm(`حذف ${selectedDrugs.length} دواء؟`)) return
+  const handleBulkDelete = () => {
+    if (selectedDrugs.length === 0) {
+      toast.error('لم تختر أي دواء')
+      return
+    }
+    setModal({
+      isOpen: true,
+      type: 'bulk-delete',
+      payload: { ids: selectedDrugs, count: selectedDrugs.length }
+    })
+  }
+
+  const confirmBulkDelete = async () => {
+    const { ids } = modal.payload
+    setModal({ ...modal, isOpen: false })
     try {
-      await Promise.all(selectedDrugs.map(id => api.delete(`/drugs/${id}`)))
-      setDrugs(prev => prev.filter(d => !selectedDrugs.includes(d._id)))
+      await Promise.all(ids.map(id => api.delete(`/drugs/${id}`)))
+      setDrugs(prev => prev.filter(d => !ids.includes(d._id)))
       setSelectedDrugs([])
-      toast.success('تم الحذف الجماعي')
+      toast.success(`تم حذف ${ids.length} دواء`)
     } catch {
       toast.error('فشل الحذف الجماعي')
     }
@@ -172,7 +186,7 @@ export default function DrugsPage() {
   return (
     <div className="min-h-screen bg-gray-50 overflow-x-hidden" dir="rtl">
       <div className="max-w-7xl mx-auto p-2 md:p-4">
-        {/* Header */}
+        {/* Header (kısaltıldı) */}
         <div className="bg-white/80 backdrop-blur-sm rounded-lg border border-gray-200 p-3 mb-3 shadow-sm">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <div>
@@ -200,7 +214,7 @@ export default function DrugsPage() {
           </div>
         </div>
 
-        {/* Search, Filter, Sort */}
+        {/* Search, Filter, Sort (kısaltıldı) */}
         <div className="bg-white rounded-lg border border-gray-200 p-3 mb-3 shadow-sm">
           <div className="flex flex-col md:flex-row gap-2">
             <div className="flex-1 relative">
@@ -211,67 +225,22 @@ export default function DrugsPage() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
-              <span className="absolute right-2.5 top-2.5 text-gray-400 text-xs">
-                <SearchIcon />
-              </span>
+              <span className="absolute right-2.5 top-2.5 text-gray-400 text-xs"><SearchIcon /></span>
               {searchTerm && (
-                <button
-                  onClick={() => setSearchTerm('')}
-                  className="absolute left-2 top-2 text-gray-400 w-5 h-5 flex items-center justify-center hover:bg-gray-100 rounded-full"
-                >
-                  <ClearIcon />
-                </button>
+                <button onClick={() => setSearchTerm('')} className="absolute left-2 top-2 text-gray-400 w-5 h-5 flex items-center justify-center hover:bg-gray-100 rounded-full"><ClearIcon /></button>
               )}
             </div>
-
             <div className="flex flex-wrap gap-1 items-center">
-              <button
-                onClick={() => setFilter('all')}
-                className={`px-2 h-8 rounded-lg text-xs font-medium ${
-                  filter === 'all' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                الكل
-              </button>
-              <button
-                onClick={() => setFilter('low-stock')}
-                className={`px-2 h-8 rounded-lg text-xs font-medium ${
-                  filter === 'low-stock' ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                ⚡ منخفض
-              </button>
-              <button
-                onClick={() => setFilter('expiring')}
-                className={`px-2 h-8 rounded-lg text-xs font-medium ${
-                  filter === 'expiring' ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                ⏰ قريب
-              </button>
-
+              <button onClick={() => setFilter('all')} className={`px-2 h-8 rounded-lg text-xs font-medium ${filter === 'all' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>الكل</button>
+              <button onClick={() => setFilter('low-stock')} className={`px-2 h-8 rounded-lg text-xs font-medium ${filter === 'low-stock' ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>⚡ منخفض</button>
+              <button onClick={() => setFilter('expiring')} className={`px-2 h-8 rounded-lg text-xs font-medium ${filter === 'expiring' ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>⏰ قريب</button>
               {categories.length > 0 && (
-                <select
-                  value={categoryFilter}
-                  onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="px-2 h-8 bg-gray-50 border border-gray-200 rounded-lg text-xs"
-                >
+                <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="px-2 h-8 bg-gray-50 border border-gray-200 rounded-lg text-xs">
                   <option value="">كل الفئات</option>
-                  {categories.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
+                  {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                 </select>
               )}
-
-              <select
-                value={`${sortBy}-${sortOrder}`}
-                onChange={(e) => {
-                  const [by, order] = e.target.value.split('-')
-                  setSortBy(by)
-                  setSortOrder(order)
-                }}
-                className="px-2 h-8 bg-gray-50 border border-gray-200 rounded-lg text-xs"
-              >
+              <select value={`${sortBy}-${sortOrder}`} onChange={(e) => { const [by, order] = e.target.value.split('-'); setSortBy(by); setSortOrder(order); }} className="px-2 h-8 bg-gray-50 border border-gray-200 rounded-lg text-xs">
                 <option value="createdAt-asc">تاريخ الإضافة (الأقدم)</option>
                 <option value="createdAt-desc">تاريخ الإضافة (الأحدث)</option>
                 <option value="name-asc">الاسم (أ-ي)</option>
@@ -287,40 +256,21 @@ export default function DrugsPage() {
           </div>
         </div>
 
-        {/* Mobile Cards (kısaltıldı) */}
+        {/* Mobile Cards (kısaltıldı, sadece delete butonu değişti) */}
         <div className="block md:hidden">
           {loading ? (
-            <div className="space-y-2">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <SkeletonCard key={i} />
-              ))}
-            </div>
+            <div className="space-y-2">{Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} />)}</div>
           ) : paginatedDrugs.length > 0 ? (
             <div className="space-y-2">
               {paginatedDrugs.map((drug) => (
-                <div
-                  key={drug._id}
-                  className={`bg-white rounded-lg border p-2.5 ${
-                    selectedDrugs.includes(drug._id) ? 'border-blue-500 bg-blue-50/30' : 'border-gray-200'
-                  }`}
-                >
-                  {/* ... kart içeriği (değişmedi) ... */}
+                <div key={drug._id} className={`bg-white rounded-lg border p-2.5 ${selectedDrugs.includes(drug._id) ? 'border-blue-500 bg-blue-50/30' : 'border-gray-200'}`}>
                   <div className="flex items-start gap-2">
                     <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-sm flex-shrink-0">💊</div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium text-gray-900 text-sm truncate">{drug.name}</h3>
                       {drug.category && <p className="text-[10px] text-gray-500 truncate">{drug.category}</p>}
                     </div>
-                    <input
-                      type="checkbox"
-                      checked={selectedDrugs.includes(drug._id)}
-                      onChange={() =>
-                        setSelectedDrugs(prev =>
-                          prev.includes(drug._id) ? prev.filter(id => id !== drug._id) : [...prev, drug._id]
-                        )
-                      }
-                      className="w-4 h-4 rounded border-gray-300 text-blue-600 flex-shrink-0"
-                    />
+                    <input type="checkbox" checked={selectedDrugs.includes(drug._id)} onChange={() => setSelectedDrugs(prev => prev.includes(drug._id) ? prev.filter(id => id !== drug._id) : [...prev, drug._id])} className="w-4 h-4 rounded border-gray-300 text-blue-600 flex-shrink-0" />
                   </div>
                   <div className="grid grid-cols-3 gap-1 mt-2 text-[10px]">
                     <div><span className="text-gray-500">المخزون:</span><span className="mr-1 font-medium">{drug.stock}</span></div>
@@ -330,9 +280,9 @@ export default function DrugsPage() {
                   <div className="flex items-center justify-between mt-2">
                     <StockStatusBadge stock={drug.stock} />
                     <div className="flex gap-1">
-                      <button onClick={() => router.push(`/drugs/${drug._id}`)} className="w-7 h-7 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 flex items-center justify-center text-xs" title="عرض">👁️</button>
-                      <button onClick={() => router.push(`/drugs/${drug._id}/edit`)} className="w-7 h-7 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-600 flex items-center justify-center text-xs" title="تعديل">✏️</button>
-                      <button onClick={() => handleDelete(drug._id, drug.name)} className="w-7 h-7 rounded-lg bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center text-xs" title="حذف">🗑️</button>
+                      <button onClick={() => router.push(`/drugs/${drug._id}`)} className="w-7 h-7 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 flex items-center justify-center text-xs">👁️</button>
+                      <button onClick={() => router.push(`/drugs/${drug._id}/edit`)} className="w-7 h-7 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-600 flex items-center justify-center text-xs">✏️</button>
+                      <button onClick={() => handleDelete(drug._id, drug.name)} className="w-7 h-7 rounded-lg bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center text-xs">🗑️</button>
                     </div>
                   </div>
                 </div>
@@ -387,6 +337,21 @@ export default function DrugsPage() {
           {/* Pagination Desktop (kısaltıldı) */}
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmModal
+        isOpen={modal.isOpen}
+        onClose={() => setModal({ ...modal, isOpen: false })}
+        onConfirm={modal.type === 'delete' ? confirmDelete : confirmBulkDelete}
+        title={modal.type === 'delete' ? 'حذف الدواء' : 'حذف مجموعة'}
+        message={
+          modal.type === 'delete'
+            ? `هل أنت متأكد من حذف "${modal.payload?.name}"؟`
+            : `هل أنت متأكد من حذف ${modal.payload?.count} دواء؟`
+        }
+        confirmText="حذف"
+        cancelText="إلغاء"
+      />
     </div>
   )
 }

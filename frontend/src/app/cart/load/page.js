@@ -80,6 +80,7 @@ const ProductCard = ({ drug, onAddToCart }) => {
   )
 }
 
+// Sepet öğesi – onaylı kaldırma eklendi
 const CartItem = ({ item, onUpdate, onRemove }) => {
   const drug = item.drug
   const maxQty = drug.stock
@@ -87,7 +88,10 @@ const CartItem = ({ item, onUpdate, onRemove }) => {
   const handleQtyChange = (newQty) => {
     const qty = parseInt(newQty)
     if (isNaN(qty) || qty < 1) {
-      onRemove(drug._id)
+      // Miktar 0 olursa silme işlemi – onay soralım
+      if (confirm(`هل تريد إزالة ${drug.name} من السلة؟`)) {
+        onRemove(drug._id)
+      }
       return
     }
     if (qty > maxQty) {
@@ -95,6 +99,12 @@ const CartItem = ({ item, onUpdate, onRemove }) => {
       return
     }
     onUpdate(drug._id, qty)
+  }
+
+  const handleRemoveClick = () => {
+    if (confirm(`هل أنت متأكد من إزالة ${drug.name} من السلة؟`)) {
+      onRemove(drug._id)
+    }
   }
 
   return (
@@ -109,7 +119,7 @@ const CartItem = ({ item, onUpdate, onRemove }) => {
       </div>
       <div className="text-left mr-2">
         <p className="font-bold text-gray-900 text-xs">{(item.quantity * item.price).toFixed(2)}</p>
-        <button onClick={() => onRemove(drug._id)} className="text-gray-400 hover:text-red-500 text-[10px]">✕</button>
+        <button onClick={handleRemoveClick} className="text-gray-400 hover:text-red-500 text-[10px]">✕</button>
       </div>
     </div>
   )
@@ -145,7 +155,6 @@ export default function LoadToCartPage() {
   const [cartItems, setCartItems] = useState([])
   const [pageLoading, setPageLoading] = useState(true)
 
-  // Varsayılan sıralama: createdAt artan
   const [sortBy, setSortBy] = useState('createdAt')
   const [sortOrder, setSortOrder] = useState('asc')
   const [categoryFilter, setCategoryFilter] = useState('')
@@ -211,9 +220,14 @@ export default function LoadToCartPage() {
     toast.success('تمت إزالة المنتج من السلة')
   }
 
+  // Toplu yükleme onaylı
   const handleLoadAll = async () => {
     if (cartItems.length === 0) {
       toast.error('السلة فارغة')
+      return
+    }
+
+    if (!confirm(`هل أنت متأكد من تحميل ${cartItems.length} منتج إلى السيارة؟`)) {
       return
     }
 

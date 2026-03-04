@@ -6,6 +6,7 @@ import Link from 'next/link'
 import api from '@/lib/api'
 import toast from 'react-hot-toast'
 import LoadingSpinner from '@/components/LoadingSpinner'
+import ConfirmModal from '@/components/ConfirmModal'
 
 export default function EditDrugPage() {
   const router = useRouter()
@@ -21,6 +22,7 @@ export default function EditDrugPage() {
     lowStockThreshold: '10',
     description: ''
   })
+  const [modal, setModal] = useState({ isOpen: false })
 
   useEffect(() => {
     if (id) fetchDrug()
@@ -58,7 +60,6 @@ export default function EditDrugPage() {
 
     setSaving(true)
     try {
-      // Tarih ve sayı dönüşümleri
       const payload = {
         name: formData.name,
         stock: parseInt(formData.stock, 10),
@@ -68,7 +69,6 @@ export default function EditDrugPage() {
         lowStockThreshold: formData.lowStockThreshold === '' ? 10 : parseInt(formData.lowStockThreshold, 10),
         description: formData.description || undefined
       }
-
       await api.put(`/drugs/${id}`, payload)
       toast.success('تم تحديث الدواء')
       router.push('/drugs')
@@ -79,8 +79,12 @@ export default function EditDrugPage() {
     }
   }
 
-  const handleDelete = async () => {
-    if (!confirm('حذف هذا الدواء؟')) return
+  const handleDelete = () => {
+    setModal({ isOpen: true })
+  }
+
+  const confirmDelete = async () => {
+    setModal({ isOpen: false })
     try {
       await api.delete(`/drugs/${id}`)
       toast.success('تم الحذف')
@@ -107,110 +111,55 @@ export default function EditDrugPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">اسم الدواء *</label>
-                <input
-                  name="name"
-                  required
-                  className="w-full h-12 px-4 bg-gray-50 border border-gray-200 rounded-xl text-base"
-                  value={formData.name}
-                  onChange={handleChange}
-                />
+                <input name="name" required className="w-full h-12 px-4 bg-gray-50 border border-gray-200 rounded-xl text-base" value={formData.name} onChange={handleChange} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">الكمية *</label>
-                <input
-                  name="stock"
-                  type="number"
-                  min="0"
-                  required
-                  className="w-full h-12 px-4 bg-gray-50 border rounded-xl text-base"
-                  value={formData.stock}
-                  onChange={handleChange}
-                />
+                <input name="stock" type="number" min="0" required className="w-full h-12 px-4 bg-gray-50 border rounded-xl text-base" value={formData.stock} onChange={handleChange} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">السعر *</label>
-                <input
-                  name="price"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  required
-                  className="w-full h-12 px-4 bg-gray-50 border rounded-xl text-base"
-                  value={formData.price}
-                  onChange={handleChange}
-                />
+                <input name="price" type="number" step="0.01" min="0" required className="w-full h-12 px-4 bg-gray-50 border rounded-xl text-base" value={formData.price} onChange={handleChange} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">تاريخ الانتهاء *</label>
-                <input
-                  name="expiryDate"
-                  type="date"
-                  required
-                  className="w-full h-12 px-4 bg-gray-50 border rounded-xl text-base"
-                  value={formData.expiryDate}
-                  onChange={handleChange}
-                />
+                <input name="expiryDate" type="date" required className="w-full h-12 px-4 bg-gray-50 border rounded-xl text-base" value={formData.expiryDate} onChange={handleChange} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">الموقع (رف)</label>
-                <input
-                  name="location"
-                  className="w-full h-12 px-4 bg-gray-50 border rounded-xl text-base"
-                  value={formData.location}
-                  onChange={handleChange}
-                />
+                <input name="location" className="w-full h-12 px-4 bg-gray-50 border rounded-xl text-base" value={formData.location} onChange={handleChange} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">حد المخزون المنخفض</label>
-                <input
-                  name="lowStockThreshold"
-                  type="number"
-                  min="0"
-                  className="w-full h-12 px-4 bg-gray-50 border rounded-xl text-base"
-                  value={formData.lowStockThreshold}
-                  onChange={handleChange}
-                />
+                <input name="lowStockThreshold" type="number" min="0" className="w-full h-12 px-4 bg-gray-50 border rounded-xl text-base" value={formData.lowStockThreshold} onChange={handleChange} />
               </div>
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">الوصف</label>
-              <textarea
-                name="description"
-                rows={4}
-                className="w-full px-4 py-3 bg-gray-50 border rounded-xl resize-none text-base"
-                value={formData.description}
-                onChange={handleChange}
-              />
+              <textarea name="description" rows={4} className="w-full px-4 py-3 bg-gray-50 border rounded-xl resize-none text-base" value={formData.description} onChange={handleChange} />
             </div>
 
             <div className="flex flex-col-reverse sm:flex-row justify-between gap-4 pt-6 border-t border-gray-200">
-              <button
-                type="button"
-                onClick={handleDelete}
-                className="w-full sm:w-auto px-8 py-3 bg-red-500 text-white rounded-xl font-medium shadow-md min-h-[48px] flex items-center justify-center text-sm md:text-base"
-              >
-                🗑️ حذف
-              </button>
+              <button type="button" onClick={handleDelete} className="w-full sm:w-auto px-8 py-3 bg-red-500 text-white rounded-xl font-medium shadow-md min-h-[48px] flex items-center justify-center text-sm md:text-base">🗑️ حذف</button>
               <div className="flex flex-col-reverse sm:flex-row gap-4 w-full sm:w-auto">
-                <Link
-                  href="/drugs"
-                  className="flex-1 sm:flex-none px-8 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium text-center min-h-[48px] flex items-center justify-center text-sm md:text-base"
-                >
-                  إلغاء
-                </Link>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="flex-1 sm:flex-none px-8 py-3 bg-emerald-500 text-white rounded-xl font-medium shadow-md disabled:opacity-70 min-h-[48px] flex items-center justify-center text-sm md:text-base"
-                >
-                  {saving ? 'جاري...' : '✅ تحديث الدواء'}
-                </button>
+                <Link href="/drugs" className="flex-1 sm:flex-none px-8 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium text-center min-h-[48px] flex items-center justify-center text-sm md:text-base">إلغاء</Link>
+                <button type="submit" disabled={saving} className="flex-1 sm:flex-none px-8 py-3 bg-emerald-500 text-white rounded-xl font-medium shadow-md disabled:opacity-70 min-h-[48px] flex items-center justify-center text-sm md:text-base">{saving ? 'جاري...' : '✅ تحديث الدواء'}</button>
               </div>
             </div>
           </form>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmModal
+        isOpen={modal.isOpen}
+        onClose={() => setModal({ isOpen: false })}
+        onConfirm={confirmDelete}
+        title="حذف الدواء"
+        message={`هل أنت متأكد من حذف "${formData.name}"؟`}
+        confirmText="حذف"
+        cancelText="إلغاء"
+      />
     </div>
   )
 }
