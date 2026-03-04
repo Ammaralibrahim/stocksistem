@@ -12,11 +12,9 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
     config.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
     config.headers['Pragma'] = 'no-cache';
     config.headers['Expires'] = '0';
-    
     return config;
   },
   (error) => Promise.reject(error)
@@ -27,10 +25,8 @@ api.interceptors.response.use(
   (response) => response.data,
   (error) => {
     let message = 'حدث خطأ غير متوقع';
-    
     if (error.response) {
       message = error.response.data?.message || error.response.statusText || 'خطأ في الخادم';
-      
       if (error.response.status === 401) {
         if (typeof window !== 'undefined') {
           localStorage.removeItem('token');
@@ -43,7 +39,6 @@ api.interceptors.response.use(
     } else {
       message = error.message;
     }
-    
     return Promise.reject(new Error(message));
   }
 );
@@ -52,34 +47,24 @@ api.interceptors.response.use(
 api.cart = {
   loadToCart: (drugId, quantity, cartId) => 
     api.post('/cart/load', { drugId, quantity, cartId }),
-  
-  unload: (drugId, quantity, cartId) =>   // تم تغيير الاسم من unloadFromCart إلى unload
+  unload: (drugId, quantity, cartId) =>   
     api.post('/cart/unload', { drugId, quantity, cartId }),
-  
   unloadAll: (cartId, notes) => 
     api.post('/cart/unload-all', { cartId, notes }),
-  
   getActive: () => api.get('/cart/active'),
-  
   getTransfers: (cartId) => api.get(`/cart/${cartId}/transfers`),
-  
   loadByBarcode: (barcode, quantity) => 
     api.post('/cart/load/barcode', { barcode, quantity }),
-  
   getAll: () => api.get('/cart'),
-  
   getById: (id) => api.get(`/cart/${id}`),
-  
   create: (data) => api.post('/cart', data),
-  
   update: (id, data) => api.put(`/cart/${id}`, data),
-  
   delete: (id) => api.delete(`/cart/${id}`)
 };
 
-// Drug methods
+// Drug methods – now accepts query parameters
 api.drugs = {
-  getAll: () => api.get('/drugs'),
+  getAll: (params = {}) => api.get('/drugs', { params }),
   getById: (id) => api.get(`/drugs/${id}`),
   create: (data) => api.post('/drugs', data),
   update: (id, data) => api.put(`/drugs/${id}`, data),
@@ -97,7 +82,7 @@ api.orders = {
   getById: (id) => api.get(`/orders/${id}`),
   update: (id, data) => api.put(`/orders/${id}`, data),
   delete: (id) => api.delete(`/orders/${id}`),
-  cartSale: (data) => api.post('/orders/cart-sale', data)   // تم الإبقاء على هذه الدالة فقط
+  cartSale: (data) => api.post('/orders/cart-sale', data)
 };
 
 // Auth methods

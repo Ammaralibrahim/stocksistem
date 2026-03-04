@@ -6,7 +6,7 @@ import Link from 'next/link'
 import api from '@/lib/api'
 import toast from 'react-hot-toast'
 
-// ==================== Alt Bileşenler ====================
+// ==================== Subcomponents ====================
 
 const QuantityInput = ({ value, onChange, max, disabled }) => (
   <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden h-8 bg-white">
@@ -15,9 +15,7 @@ const QuantityInput = ({ value, onChange, max, disabled }) => (
       onClick={() => onChange(Math.min(max, (parseInt(value) || 1) + 1))}
       disabled={disabled || parseInt(value) >= max}
       className="w-7 h-full bg-gray-50 hover:bg-gray-100 disabled:opacity-40 text-gray-600 text-sm transition-colors"
-    >
-      +
-    </button>
+    >+</button>
     <input
       type="number"
       min="1"
@@ -32,14 +30,13 @@ const QuantityInput = ({ value, onChange, max, disabled }) => (
       onClick={() => onChange(Math.max(1, (parseInt(value) || 1) - 1))}
       disabled={disabled || parseInt(value) <= 1}
       className="w-7 h-full bg-gray-50 hover:bg-gray-100 disabled:opacity-40 text-gray-600 text-sm transition-colors"
-    >
-      -
-    </button>
+    >-</button>
   </div>
 )
 
 const ProductCard = ({ drug, onAddToCart }) => {
   const [localQty, setLocalQty] = useState('1')
+  const totalStock = (drug.stock || 0) + (drug.cartStock || 0)
 
   const handleAdd = () => {
     const qty = parseInt(localQty)
@@ -48,7 +45,7 @@ const ProductCard = ({ drug, onAddToCart }) => {
       return
     }
     if (qty > drug.stock) {
-      toast.error(`الكمية المطلوبة (${qty}) أكبر من المخزون (${drug.stock})`)
+      toast.error(`الكمية المطلوبة (${qty}) أكبر من مخزون المستودع (${drug.stock})`)
       return
     }
     onAddToCart(drug, qty)
@@ -65,25 +62,19 @@ const ProductCard = ({ drug, onAddToCart }) => {
           <h4 className="font-medium text-gray-900 text-xs truncate">{drug.name}</h4>
           <p className="text-[11px] text-gray-500 mt-0.5">{drug.price?.toFixed(2)} ل.س</p>
           <div className="flex items-center gap-2 mt-1 text-[10px]">
-            <span className="text-gray-600">المخزون: {drug.stock}</span>
+            <span className="text-gray-600">المستودع: {drug.stock}</span>
             <span className="text-gray-600">السيارة: {drug.cartStock || 0}</span>
+            <span className="text-gray-600">الإجمالي: {totalStock}</span>
           </div>
         </div>
       </div>
-
       <div className="mt-2 flex items-center gap-1.5">
-        <QuantityInput
-          value={localQty}
-          onChange={setLocalQty}
-          max={drug.stock}
-        />
+        <QuantityInput value={localQty} onChange={setLocalQty} max={drug.stock} />
         <button
           onClick={handleAdd}
           disabled={!localQty || parseInt(localQty) <= 0 || parseInt(localQty) > drug.stock}
           className="flex-1 h-8 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700 disabled:bg-gray-200 disabled:text-gray-500 transition-colors"
-        >
-          إضافة
-        </button>
+        >إضافة</button>
       </div>
     </div>
   )
@@ -91,7 +82,7 @@ const ProductCard = ({ drug, onAddToCart }) => {
 
 const CartItem = ({ item, onUpdate, onRemove }) => {
   const drug = item.drug
-  const maxQty = drug.stock // sepetteki toplam miktar stoku aşamaz
+  const maxQty = drug.stock
 
   const handleQtyChange = (newQty) => {
     const qty = parseInt(newQty)
@@ -111,26 +102,14 @@ const CartItem = ({ item, onUpdate, onRemove }) => {
       <div className="flex-1 min-w-0">
         <p className="font-medium text-gray-900 text-xs truncate">{drug.name}</p>
         <div className="flex items-center gap-1 mt-1">
-          <button
-            onClick={() => handleQtyChange(item.quantity - 1)}
-            className="w-6 h-6 bg-white border border-blue-200 rounded text-xs hover:bg-blue-100 transition-colors"
-          >
-            -
-          </button>
+          <button onClick={() => handleQtyChange(item.quantity - 1)} className="w-6 h-6 bg-white border border-blue-200 rounded text-xs hover:bg-blue-100">-</button>
           <span className="w-5 text-center text-xs font-medium">{item.quantity}</span>
-          <button
-            onClick={() => handleQtyChange(item.quantity + 1)}
-            className="w-6 h-6 bg-white border border-blue-200 rounded text-xs hover:bg-blue-100 transition-colors"
-          >
-            +
-          </button>
+          <button onClick={() => handleQtyChange(item.quantity + 1)} className="w-6 h-6 bg-white border border-blue-200 rounded text-xs hover:bg-blue-100">+</button>
         </div>
       </div>
       <div className="text-left mr-2">
         <p className="font-bold text-gray-900 text-xs">{(item.quantity * item.price).toFixed(2)}</p>
-        <button onClick={() => onRemove(drug._id)} className="text-gray-400 hover:text-red-500 text-[10px] transition-colors">
-          ✕
-        </button>
+        <button onClick={() => onRemove(drug._id)} className="text-gray-400 hover:text-red-500 text-[10px]">✕</button>
       </div>
     </div>
   )
@@ -143,13 +122,7 @@ const LoadSkeleton = () => (
       <div className="lg:col-span-2 space-y-4">
         {[1, 2, 3, 4].map(i => (
           <div key={i} className="bg-white rounded-2xl border border-gray-100 p-4">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-gray-200 rounded-xl" />
-              <div className="flex-1 space-y-2">
-                <div className="h-4 w-3/4 bg-gray-200 rounded" />
-                <div className="h-3 w-1/2 bg-gray-200 rounded" />
-              </div>
-            </div>
+            <div className="flex items-start gap-3"><div className="w-10 h-10 bg-gray-200 rounded-xl" /><div className="flex-1 space-y-2"><div className="h-4 w-3/4 bg-gray-200 rounded" /><div className="h-3 w-1/2 bg-gray-200 rounded" /></div></div>
           </div>
         ))}
       </div>
@@ -161,7 +134,7 @@ const LoadSkeleton = () => (
   </div>
 )
 
-// ==================== Ana Sayfa ====================
+// ==================== Main Page ====================
 
 export default function LoadToCartPage() {
   const router = useRouter()
@@ -169,8 +142,15 @@ export default function LoadToCartPage() {
   const [drugs, setDrugs] = useState([])
   const [cart, setCart] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
-  const [cartItems, setCartItems] = useState([]) // { drug, quantity, price }
+  const [cartItems, setCartItems] = useState([])
   const [pageLoading, setPageLoading] = useState(true)
+
+  // Varsayılan sıralama: createdAt artan
+  const [sortBy, setSortBy] = useState('createdAt')
+  const [sortOrder, setSortOrder] = useState('asc')
+  const [categoryFilter, setCategoryFilter] = useState('')
+  const [categories, setCategories] = useState([])
+  const [showOutOfStock, setShowOutOfStock] = useState(false)
 
   useEffect(() => {
     fetchData()
@@ -184,6 +164,9 @@ export default function LoadToCartPage() {
       ])
       setDrugs(Array.isArray(drugsData) ? drugsData : [])
       setCart(cartData)
+
+      const cats = [...new Set(drugsData.map(d => d.category).filter(Boolean))]
+      setCategories(cats)
     } catch (error) {
       console.error('خطأ في تحميل البيانات:', error)
       toast.error('فشل تحميل البيانات')
@@ -202,9 +185,7 @@ export default function LoadToCartPage() {
           return prev
         }
         return prev.map(item =>
-          item.drug._id === drug._id
-            ? { ...item, quantity: newQty }
-            : item
+          item.drug._id === drug._id ? { ...item, quantity: newQty } : item
         )
       } else {
         if (quantity > drug.stock) {
@@ -220,9 +201,7 @@ export default function LoadToCartPage() {
   const updateCartItem = (drugId, newQuantity) => {
     setCartItems(prev =>
       prev.map(item =>
-        item.drug._id === drugId
-          ? { ...item, quantity: newQuantity }
-          : item
+        item.drug._id === drugId ? { ...item, quantity: newQuantity } : item
       )
     )
   }
@@ -257,17 +236,52 @@ export default function LoadToCartPage() {
     }
   }
 
+  // Filtreleme ve sıralama
   const filteredDrugs = useMemo(() => {
-    if (!searchTerm.trim()) return drugs.filter(d => (d.stock || 0) > 0)
-    const lower = searchTerm.toLowerCase()
-    return drugs.filter(d =>
-      (d.stock || 0) > 0 && (
+    let filtered = drugs
+
+    if (searchTerm.trim()) {
+      const lower = searchTerm.toLowerCase()
+      filtered = filtered.filter(d =>
         d.name?.toLowerCase().includes(lower) ||
         d.barcode?.includes(searchTerm) ||
-        d.serialNumber?.toLowerCase().includes(lower)
+        d.serialNumber?.toLowerCase().includes(lower) ||
+        d.category?.toLowerCase().includes(lower)
       )
-    )
-  }, [drugs, searchTerm])
+    }
+
+    if (categoryFilter) {
+      filtered = filtered.filter(d => d.category === categoryFilter)
+    }
+
+    if (!showOutOfStock) {
+      filtered = filtered.filter(d => (d.stock || 0) > 0)
+    }
+
+    const sorted = [...filtered].sort((a, b) => {
+      let aVal, bVal
+      if (sortBy === 'name') {
+        aVal = a.name || ''
+        bVal = b.name || ''
+        return sortOrder === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal)
+      } else if (sortBy === 'stock') {
+        aVal = a.stock || 0
+        bVal = b.stock || 0
+      } else if (sortBy === 'price') {
+        aVal = a.price || 0
+        bVal = b.price || 0
+      } else if (sortBy === 'expiryDate') {
+        aVal = a.expiryDate ? new Date(a.expiryDate).getTime() : 0
+        bVal = b.expiryDate ? new Date(b.expiryDate).getTime() : 0
+      } else if (sortBy === 'createdAt') {
+        aVal = a.createdAt ? new Date(a.createdAt).getTime() : 0
+        bVal = b.createdAt ? new Date(b.createdAt).getTime() : 0
+      }
+      return sortOrder === 'asc' ? aVal - bVal : bVal - aVal
+    })
+
+    return sorted
+  }, [drugs, searchTerm, categoryFilter, showOutOfStock, sortBy, sortOrder])
 
   const cartSummary = useMemo(() => {
     const totalItems = cartItems.reduce((acc, item) => acc + item.quantity, 0)
@@ -279,52 +293,77 @@ export default function LoadToCartPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-5" dir="rtl">
-      {/* Scroll bar stilleri */}
       <style jsx>{`
-        .scrollbar-thin::-webkit-scrollbar {
-          width: 4px;
-        }
-        .scrollbar-thin::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .scrollbar-thin::-webkit-scrollbar-thumb {
-          background: #d1d5db;
-          border-radius: 20px;
-        }
-        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-          background: #9ca3af;
-        }
+        .scrollbar-thin::-webkit-scrollbar { width: 4px; }
+        .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+        .scrollbar-thin::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 20px; }
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
       `}</style>
 
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6 flex items-center gap-3">
-          <Link
-            href="/cart"
-            className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors"
-          >
+          <Link href="/cart" className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors">
             <span className="text-lg">←</span>
           </Link>
           <h1 className="text-2xl font-semibold text-gray-900">تحميل إلى السيارة</h1>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          {/* Ürün Listesi */}
+          {/* Product List */}
           <div className="lg:col-span-2 space-y-4">
-            {/* Arama */}
-            <div className="relative">
-              <input
-                type="text"
-                className="w-full h-12 pr-10 pl-4 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                placeholder="ابحث بالاسم أو الباركود..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <span className="absolute right-3 top-3 text-gray-400">🔍</span>
+            {/* Search and Filters */}
+            <div className="bg-white rounded-xl border border-gray-200 p-3">
+              <div className="flex flex-col md:flex-row gap-2">
+                <div className="flex-1 relative">
+                  <input
+                    type="text"
+                    className="w-full h-10 pr-9 pl-4 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    placeholder="ابحث بالاسم، الباركود، الفئة..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                  <span className="absolute right-3 top-2.5 text-gray-400">🔍</span>
+                  {searchTerm && (
+                    <button onClick={() => setSearchTerm('')} className="absolute left-2 top-2 text-gray-400 w-6 h-6 flex items-center justify-center hover:bg-gray-100 rounded-full">✕</button>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap gap-1 items-center">
+                  {categories.length > 0 && (
+                    <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="px-2 h-9 bg-gray-50 border border-gray-200 rounded-lg text-sm">
+                      <option value="">كل الفئات</option>
+                      {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                    </select>
+                  )}
+
+                  <select value={`${sortBy}-${sortOrder}`} onChange={(e) => {
+                    const [by, order] = e.target.value.split('-')
+                    setSortBy(by)
+                    setSortOrder(order)
+                  }} className="px-2 h-9 bg-gray-50 border border-gray-200 rounded-lg text-sm">
+                    <option value="createdAt-asc">تاريخ الإضافة (الأقدم)</option>
+                    <option value="createdAt-desc">تاريخ الإضافة (الأحدث)</option>
+                    <option value="name-asc">الاسم (أ-ي)</option>
+                    <option value="name-desc">الاسم (ي-أ)</option>
+                    <option value="stock-asc">المخزون (الأقل)</option>
+                    <option value="stock-desc">المخزون (الأكثر)</option>
+                    <option value="price-asc">السعر (الأقل)</option>
+                    <option value="price-desc">السعر (الأكثر)</option>
+                    <option value="expiryDate-asc">تاريخ الانتهاء (الأقرب)</option>
+                    <option value="expiryDate-desc">تاريخ الانتهاء (الأبعد)</option>
+                  </select>
+
+                  <label className="flex items-center gap-1 text-xs">
+                    <input type="checkbox" checked={showOutOfStock} onChange={(e) => setShowOutOfStock(e.target.checked)} className="rounded border-gray-300" />
+                    <span>عرض النافد</span>
+                  </label>
+                </div>
+              </div>
             </div>
 
-            {/* Ürün Kartları - Sabit yükseklik, scroll */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto p-1 scrollbar-thin">
+            {/* Product Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[400px] overflow-y-auto p-1 scrollbar-thin">
               {filteredDrugs.length === 0 ? (
                 <div className="col-span-2 text-center py-12 text-gray-500 bg-white rounded-2xl border border-gray-100">
                   <span className="text-5xl">💊</span>
@@ -332,92 +371,58 @@ export default function LoadToCartPage() {
                 </div>
               ) : (
                 filteredDrugs.map((drug) => (
-                  <ProductCard
-                    key={drug._id}
-                    drug={drug}
-                    onAddToCart={addToCart}
-                  />
+                  <ProductCard key={drug._id} drug={drug} onAddToCart={addToCart} />
                 ))
               )}
             </div>
           </div>
 
-          {/* Sağ Panel: Sepet + Araba Bilgisi */}
+          {/* Right Panel: Cart + Cart Info */}
           <div className="space-y-4">
-            {/* Sepet */}
+            {/* Cart */}
             <div className="bg-white rounded-2xl border border-gray-100 p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-medium text-gray-900">🛒 السلة</h3>
                 {cartItems.length > 0 && (
-                  <button
-                    onClick={() => setCartItems([])}
-                    className="text-xs text-gray-500 hover:text-red-500 transition-colors"
-                  >
-                    تفريغ
-                  </button>
+                  <button onClick={() => setCartItems([])} className="text-xs text-gray-500 hover:text-red-500 transition-colors">تفريغ</button>
                 )}
               </div>
 
               {cartItems.length === 0 ? (
-                <div className="text-center py-8 text-gray-400">
-                  <span className="text-4xl">🛒</span>
-                  <p className="text-xs mt-2">السلة فارغة</p>
-                </div>
+                <div className="text-center py-8 text-gray-400"><span className="text-4xl">🛒</span><p className="text-xs mt-2">السلة فارغة</p></div>
               ) : (
                 <>
                   <div className="space-y-2 max-h-80 overflow-y-auto mb-4 scrollbar-thin">
                     {cartItems.map((item) => (
-                      <CartItem
-                        key={item.drug._id}
-                        item={item}
-                        onUpdate={updateCartItem}
-                        onRemove={removeFromCart}
-                      />
+                      <CartItem key={item.drug._id} item={item} onUpdate={updateCartItem} onRemove={removeFromCart} />
                     ))}
                   </div>
-
                   <div className="flex justify-between items-center pt-3 border-t border-gray-100 text-sm">
                     <span className="text-gray-600">الإجمالي</span>
                     <span className="font-semibold text-blue-600">{cartSummary.totalValue.toFixed(2)} ل.س</span>
                   </div>
-
-                  <button
-                    onClick={handleLoadAll}
-                    disabled={loading}
-                    className="w-full mt-4 h-11 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 disabled:bg-gray-200 disabled:text-gray-500 transition-colors"
-                  >
+                  <button onClick={handleLoadAll} disabled={loading} className="w-full mt-4 h-11 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 disabled:bg-gray-200 disabled:text-gray-500 transition-colors">
                     {loading ? 'جاري التحميل...' : 'تحميل الكل إلى السيارة'}
                   </button>
                 </>
               )}
             </div>
 
-            {/* Aktif Araba */}
+            {/* Active Cart Info */}
             {cart && (
               <div className="bg-white rounded-2xl border border-gray-100 p-5">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
-                    <span className="text-blue-600">🚚</span>
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-gray-900 text-sm">{cart.name}</h4>
-                    <p className="text-xs text-gray-500">{cart.driverName || 'بدون سائق'}</p>
-                  </div>
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center"><span className="text-blue-600">🚚</span></div>
+                  <div><h4 className="font-medium text-gray-900 text-sm">{cart.name}</h4><p className="text-xs text-gray-500">{cart.driverName || 'بدون سائق'}</p></div>
                 </div>
                 <div className="grid grid-cols-2 gap-3 mt-3 text-xs">
-                  <div>
-                    <span className="text-gray-500">المنتجات:</span>
-                    <span className="mr-1 font-medium">{cart.totalItems || 0}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">القيمة:</span>
-                    <span className="mr-1 font-medium">{(cart.totalValue || 0).toFixed(2)} ل.س</span>
-                  </div>
+                  <div><span className="text-gray-500">المنتجات:</span><span className="mr-1 font-medium">{cart.totalItems || 0}</span></div>
+                  <div><span className="text-gray-500">القيمة:</span><span className="mr-1 font-medium">{(cart.totalValue || 0).toFixed(2)} ل.س</span></div>
                 </div>
               </div>
             )}
 
-            {/* İpucu */}
+            {/* Hint */}
             <div className="bg-blue-50 rounded-xl p-4 text-xs text-blue-700">
               <p>💡 أضف المنتجات إلى السلة، ثم انقلها دفعة واحدة إلى السيارة.</p>
             </div>

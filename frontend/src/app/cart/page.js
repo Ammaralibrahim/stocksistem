@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import api from '@/lib/api'
@@ -61,6 +61,8 @@ export default function CartPage() {
   const [cart, setCart] = useState(null)
   const [loading, setLoading] = useState(true)
   const [unloadAllLoading, setUnloadAllLoading] = useState(false)
+  // Arama durumu
+  const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
     fetchCart()
@@ -93,13 +95,31 @@ export default function CartPage() {
     try {
       await api.cart.unloadAll(cart._id, 'تفريغ يدوي')
       toast.success('تم التفريغ بنجاح')
-      await fetchCart() // Güncel veriyi al
+      await fetchCart()
     } catch (error) {
       toast.error(error.message || 'فشل التفريغ')
     } finally {
       setUnloadAllLoading(false)
     }
   }
+
+  // Filtrelenmiş öğeler
+  const filteredItems = useMemo(() => {
+    if (!cart?.items) return []
+    if (!searchTerm.trim()) return cart.items
+
+    const lower = searchTerm.toLowerCase()
+    return cart.items.filter(item => {
+      const drug = item.drug
+      if (!drug) return false
+      return (
+        drug.name?.toLowerCase().includes(lower) ||
+        drug.barcode?.toLowerCase().includes(lower) ||
+        drug.category?.toLowerCase().includes(lower) ||
+        drug.serialNumber?.toLowerCase().includes(lower)
+      )
+    })
+  }, [cart, searchTerm])
 
   if (loading) {
     return (
@@ -151,7 +171,36 @@ export default function CartPage() {
 
         {/* Products List */}
         <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-          <h2 className="font-semibold text-base mb-3">المنتجات في السيارة</h2>
+          {/* Başlık ve arama kutusu */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+            <h2 className="font-semibold text-base">المنتجات في السيارة</h2>
+            <div className="relative w-full sm:w-64">
+              <input
+                type="text"
+                className="w-full h-9 pr-8 pl-8 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                placeholder="ابحث بالاسم، الباركود..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <span className="absolute right-2.5 top-2 text-gray-400">🔍</span>
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="absolute left-2 top-1.5 text-gray-400 w-5 h-5 flex items-center justify-center hover:bg-gray-100 rounded-full"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Gösterilen ürün sayısı */}
+          {cart?.items?.length > 0 && (
+            <p className="text-xs text-gray-500 mb-3">
+              عرض {filteredItems.length} من {cart.items.length} منتج
+            </p>
+          )}
+
           {!cart?.items?.length ? (
             <div className="text-center py-8 text-gray-500">
               <span className="text-4xl">📭</span>
@@ -160,9 +209,20 @@ export default function CartPage() {
                 تحميل منتجات
               </Link>
             </div>
+          ) : filteredItems.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <span className="text-4xl">🔍</span>
+              <p className="mt-2 text-sm">لا توجد منتجات تطابق البحث</p>
+              <button
+                onClick={() => setSearchTerm('')}
+                className="mt-3 text-blue-500 text-sm underline"
+              >
+                مسح البحث
+              </button>
+            </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {cart.items.map((item, idx) => {
+              {filteredItems.map((item, idx) => {
                 const expiryDate = item.drug?.expiryDate ? new Date(item.drug.expiryDate) : null
                 const today = new Date()
                 const daysLeft = expiryDate ? Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24)) : null
