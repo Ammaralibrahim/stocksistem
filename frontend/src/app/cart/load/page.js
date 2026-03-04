@@ -370,7 +370,7 @@ export default function LoadToCartPage() {
 
                   <label className="flex items-center gap-1 text-xs">
                     <input type="checkbox" checked={showOutOfStock} onChange={(e) => setShowOutOfStock(e.target.checked)} className="rounded border-gray-300" />
-                    <span>عرض النافد</span>
+                    <span>عرض الإجمالي</span>
                   </label>
                 </div>
               </div>

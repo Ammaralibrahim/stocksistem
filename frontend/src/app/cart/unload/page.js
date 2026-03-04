@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import api from '@/lib/api'
 import toast from 'react-hot-toast'
+import ConfirmModal from '@/components/ConfirmModal'
 
 export default function UnloadPage() {
   const router = useRouter()
@@ -15,6 +16,7 @@ export default function UnloadPage() {
   const [drug, setDrug] = useState(null)
   const [cart, setCart] = useState(null)
   const [quantity, setQuantity] = useState('1')
+  const [modal, setModal] = useState({ isOpen: false })
 
   useEffect(() => {
     if (!drugId) {
@@ -34,7 +36,6 @@ export default function UnloadPage() {
       setDrug(drugData)
       setCart(cartData)
 
-      // البحث عن العنصر في السيارة مع التأكد من وجود الدواء
       const cartItem = cartData.items?.find(item => item.drug?._id === drugId)
       if (cartItem) {
         setQuantity(cartItem.quantity.toString())
@@ -73,7 +74,22 @@ export default function UnloadPage() {
     }
   }
 
-  // ✅ التحقق من وجود البيانات قبل أي استخدام
+  const handleConfirm = () => {
+    // Önce miktar kontrolünü yap, geçersizse modal açılmasın
+    const qty = parseInt(quantity)
+    const cartItem = cart?.items?.find(item => item.drug?._id === drugId)
+    if (!qty || qty <= 0) {
+      toast.error('الرجاء إدخال كمية صالحة')
+      return
+    }
+    if (!cartItem || qty > cartItem.quantity) {
+      toast.error(`الكمية المطلوبة أكبر من المتوفر في السيارة (${cartItem?.quantity || 0})`)
+      return
+    }
+    // Miktar geçerliyse modalı aç
+    setModal({ isOpen: true })
+  }
+
   if (!drug || !cart) {
     return (
       <div className="min-h-screen bg-gray-50 p-4 flex items-center justify-center">
@@ -82,7 +98,6 @@ export default function UnloadPage() {
     )
   }
 
-  // الآن أصبح cart و drug موجودين بشكل مؤكد
   const cartItem = cart.items.find(item => item.drug?._id === drugId)
   const maxQuantity = cartItem?.quantity || 0
 
@@ -141,7 +156,7 @@ export default function UnloadPage() {
               إلغاء
             </Link>
             <button
-              onClick={handleUnload}
+              onClick={handleConfirm}
               disabled={loading || !quantity || parseInt(quantity) <= 0 || parseInt(quantity) > maxQuantity}
               className={`flex-1 py-3 rounded-xl font-medium transition-all ${
                 loading || !quantity || parseInt(quantity) <= 0 || parseInt(quantity) > maxQuantity
@@ -154,6 +169,20 @@ export default function UnloadPage() {
           </div>
         </div>
       </div>
+
+      {/* Onay Modalı */}
+      <ConfirmModal
+        isOpen={modal.isOpen}
+        onClose={() => setModal({ isOpen: false })}
+        onConfirm={() => {
+          setModal({ isOpen: false })
+          handleUnload()
+        }}
+        title="تأكيد الإعادة"
+        message={`هل أنت متأكد من إعادة ${quantity} وحدة من "${drug?.name}" إلى المستودع؟`}
+        confirmText="تأكيد"
+        cancelText="إلغاء"
+      />
     </div>
   )
 }
