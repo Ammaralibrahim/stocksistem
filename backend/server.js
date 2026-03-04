@@ -62,6 +62,6 @@ app.listen(PORT, () => {
   console.log(`✅ الخادم يعمل على المنفذ ${PORT}`)
   console.log(`🌐 رابط الواجهة الأمامية: http://localhost:3000`)
   console.log(`🔗 رابط API: http://localhost:${PORT}/api`)
-  console.log(`👤 تسجيل الدخول الافتراضي: admin / admin123`)
+  console.log(`👤 تسجيل الدخول الافتراضي: admin / admin999`)
   console.log(`🚚 نظام عربة التوزيع: نشط`)
 })
