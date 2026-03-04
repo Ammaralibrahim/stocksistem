@@ -14,8 +14,6 @@ const ClearIcon = () => <span className="text-gray-400">✕</span>
 const DeleteIcon = () => <span>🗑️</span>
 const EditIcon = () => <span>✏️</span>
 const ViewIcon = () => <span>👁️</span>
-const PrevIcon = () => <span>→</span>
-const NextIcon = () => <span>←</span>
 
 const StockStatusBadge = ({ stock }) => {
   const status = useMemo(() => {
@@ -46,9 +44,10 @@ const SkeletonCard = () => (
     </div>
     <div className="flex justify-between mt-2">
       <div className="w-12 h-5 bg-gray-200 rounded-full" />
-      <div className="flex gap-1">
-        <div className="w-7 h-7 bg-gray-200 rounded-lg" />
-        <div className="w-7 h-7 bg-gray-200 rounded-lg" />
+      <div className="flex gap-3">
+        <div className="w-11 h-11 bg-gray-200 rounded-lg" />
+        <div className="w-11 h-11 bg-gray-200 rounded-lg" />
+        <div className="w-11 h-11 bg-gray-200 rounded-lg" />
       </div>
     </div>
   </div>
@@ -62,7 +61,7 @@ const SkeletonRow = () => (
     <td className="py-2 px-2"><div className="w-8 h-3 bg-gray-200 rounded" /></td>
     <td className="py-2 px-2"><div className="w-14 h-3 bg-gray-200 rounded" /></td>
     <td className="py-2 px-2"><div className="w-12 h-5 bg-gray-200 rounded-full" /></td>
-    <td className="py-2 px-2"><div className="flex gap-1"><div className="w-7 h-7 bg-gray-200 rounded-lg" /><div className="w-7 h-7 bg-gray-200 rounded-lg" /></div></td>
+    <td className="py-2 px-2"><div className="flex gap-3"><div className="w-11 h-11 bg-gray-200 rounded-lg" /><div className="w-11 h-11 bg-gray-200 rounded-lg" /><div className="w-11 h-11 bg-gray-200 rounded-lg" /></div></td>
   </tr>
 )
 
@@ -73,8 +72,6 @@ export default function DrugsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [filter, setFilter] = useState('all')
   const [selectedDrugs, setSelectedDrugs] = useState([])
-  const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 10
 
   const [sortBy, setSortBy] = useState('createdAt')
   const [sortOrder, setSortOrder] = useState('asc')
@@ -121,12 +118,6 @@ export default function DrugsPage() {
       return expiry <= thirtyDaysFromNow && expiry >= new Date()
     })
   }, [drugs, filter])
-
-  const totalPages = Math.ceil(filteredDrugs.length / itemsPerPage)
-  const paginatedDrugs = useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage
-    return filteredDrugs.slice(start, start + itemsPerPage)
-  }, [filteredDrugs, currentPage])
 
   const handleDelete = async (id, name) => {
     setModal({
@@ -175,18 +166,18 @@ export default function DrugsPage() {
 
   const handleSelectAll = (checked) => {
     if (checked) {
-      setSelectedDrugs(prev => [...new Set([...prev, ...paginatedDrugs.map(d => d._id)])])
+      setSelectedDrugs(prev => [...new Set([...prev, ...filteredDrugs.map(d => d._id)])])
     } else {
-      setSelectedDrugs(prev => prev.filter(id => !paginatedDrugs.some(d => d._id === id)))
+      setSelectedDrugs(prev => prev.filter(id => !filteredDrugs.some(d => d._id === id)))
     }
   }
 
-  const allSelected = paginatedDrugs.length > 0 && paginatedDrugs.every(d => selectedDrugs.includes(d._id))
+  const allSelected = filteredDrugs.length > 0 && filteredDrugs.every(d => selectedDrugs.includes(d._id))
 
   return (
     <div className="min-h-screen bg-gray-50 overflow-x-hidden" dir="rtl">
       <div className="max-w-7xl mx-auto p-2 md:p-4">
-        {/* Header (kısaltıldı) */}
+        {/* Header */}
         <div className="bg-white/80 backdrop-blur-sm rounded-lg border border-gray-200 p-3 mb-3 shadow-sm">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <div>
@@ -214,7 +205,7 @@ export default function DrugsPage() {
           </div>
         </div>
 
-        {/* Search, Filter, Sort (kısaltıldı) */}
+        {/* Search, Filter, Sort */}
         <div className="bg-white rounded-lg border border-gray-200 p-3 mb-3 shadow-sm">
           <div className="flex flex-col md:flex-row gap-2">
             <div className="flex-1 relative">
@@ -256,13 +247,15 @@ export default function DrugsPage() {
           </div>
         </div>
 
-        {/* Mobile Cards (kısaltıldı, sadece delete butonu değişti) */}
+        {/* Mobil Kartlar - Tümü gösterilir, sayfalama yok */}
         <div className="block md:hidden">
           {loading ? (
-            <div className="space-y-2">{Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} />)}</div>
-          ) : paginatedDrugs.length > 0 ? (
             <div className="space-y-2">
-              {paginatedDrugs.map((drug) => (
+              {Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} />)}
+            </div>
+          ) : filteredDrugs.length > 0 ? (
+            <div className="space-y-2">
+              {filteredDrugs.map((drug) => (
                 <div key={drug._id} className={`bg-white rounded-lg border p-2.5 ${selectedDrugs.includes(drug._id) ? 'border-blue-500 bg-blue-50/30' : 'border-gray-200'}`}>
                   <div className="flex items-start gap-2">
                     <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-sm flex-shrink-0">💊</div>
@@ -280,9 +273,9 @@ export default function DrugsPage() {
                   <div className="flex items-center justify-between mt-2">
                     <StockStatusBadge stock={drug.stock} />
                     <div className="flex gap-3">
-                      <button onClick={() => router.push(`/drugs/${drug._id}`)} className="w-7 h-7 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 flex items-center justify-center text-xs">👁️</button>
-                      <button onClick={() => router.push(`/drugs/${drug._id}/edit`)} className="w-7 h-7 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-600 flex items-center justify-center text-xs">✏️</button>
-                      <button onClick={() => handleDelete(drug._id, drug.name)} className="w-7 h-7 rounded-lg bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center text-xs">🗑️</button>
+                      <button onClick={() => router.push(`/drugs/${drug._id}`)} className="w-11 h-11 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 flex items-center justify-center text-base" title="عرض">👁️</button>
+                      <button onClick={() => router.push(`/drugs/${drug._id}/edit`)} className="w-11 h-11 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-600 flex items-center justify-center text-base" title="تعديل">✏️</button>
+                      <button onClick={() => handleDelete(drug._id, drug.name)} className="w-11 h-11 rounded-lg bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center text-base" title="حذف">🗑️</button>
                     </div>
                   </div>
                 </div>
@@ -295,16 +288,17 @@ export default function DrugsPage() {
               <Link href="/drugs/new" className="inline-block mt-3 px-3 py-1.5 bg-blue-500 text-white rounded-lg text-xs">إضافة دواء جديد</Link>
             </div>
           )}
-          {/* Pagination Mobile (kısaltıldı) */}
         </div>
 
-        {/* Desktop Table (kısaltıldı) */}
+        {/* Masaüstü Tablo - Tümü gösterilir, sayfalama yok */}
         <div className="hidden md:block bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[800px] text-xs">
               <thead className="bg-gray-50">
                 <tr className="border-b border-gray-200">
-                  <th className="py-2 px-2 w-8"><input type="checkbox" onChange={(e) => handleSelectAll(e.target.checked)} checked={allSelected} className="w-4 h-4 rounded border-gray-300 text-blue-600" /></th>
+                  <th className="py-2 px-2 w-8">
+                    <input type="checkbox" onChange={(e) => handleSelectAll(e.target.checked)} checked={allSelected} className="w-4 h-4 rounded border-gray-300 text-blue-600" />
+                  </th>
                   <th className="text-right py-2 px-2 font-medium text-gray-600">الدواء</th>
                   <th className="text-right py-2 px-2 font-medium text-gray-600">المخزون</th>
                   <th className="text-right py-2 px-2 font-medium text-gray-600">السعر</th>
@@ -316,16 +310,32 @@ export default function DrugsPage() {
               <tbody>
                 {loading ? (
                   Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
-                ) : paginatedDrugs.length > 0 ? (
-                  paginatedDrugs.map((drug) => (
+                ) : filteredDrugs.length > 0 ? (
+                  filteredDrugs.map((drug) => (
                     <tr key={drug._id} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-2 px-2"><input type="checkbox" checked={selectedDrugs.includes(drug._id)} onChange={() => setSelectedDrugs(prev => prev.includes(drug._id) ? prev.filter(id => id !== drug._id) : [...prev, drug._id])} className="w-4 h-4 rounded border-gray-300 text-blue-600" /></td>
-                      <td className="py-2 px-2"><div className="flex items-center gap-2"><div className="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center text-sm flex-shrink-0">💊</div><div><p className="font-medium text-gray-900">{drug.name}</p>{drug.category && <p className="text-[10px] text-gray-500">{drug.category}</p>}</div></div></td>
+                      <td className="py-2 px-2">
+                        <input type="checkbox" checked={selectedDrugs.includes(drug._id)} onChange={() => setSelectedDrugs(prev => prev.includes(drug._id) ? prev.filter(id => id !== drug._id) : [...prev, drug._id])} className="w-4 h-4 rounded border-gray-300 text-blue-600" />
+                      </td>
+                      <td className="py-2 px-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center text-sm flex-shrink-0">💊</div>
+                          <div>
+                            <p className="font-medium text-gray-900">{drug.name}</p>
+                            {drug.category && <p className="text-[10px] text-gray-500">{drug.category}</p>}
+                          </div>
+                        </div>
+                      </td>
                       <td className="py-2 px-2">{drug.stock}</td>
                       <td className="py-2 px-2 font-medium">{drug.price} ل.س</td>
                       <td className="py-2 px-2">{drug.expiryDate ? format(new Date(drug.expiryDate), 'dd/MM/yyyy') : '-'}</td>
                       <td className="py-2 px-2"><StockStatusBadge stock={drug.stock} /></td>
-                      <td className="py-2 px-2"><div className="flex gap-1"><button onClick={() => router.push(`/drugs/${drug._id}`)} className="w-7 h-7 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 flex items-center justify-center text-xs">👁️</button><button onClick={() => router.push(`/drugs/${drug._id}/edit`)} className="w-7 h-7 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-600 flex items-center justify-center text-xs">✏️</button><button onClick={() => handleDelete(drug._id, drug.name)} className="w-7 h-7 rounded-lg bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center text-xs">🗑️</button></div></td>
+                      <td className="py-2 px-2">
+                        <div className="flex gap-3">
+                          <button onClick={() => router.push(`/drugs/${drug._id}`)} className="w-11 h-11 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 flex items-center justify-center text-base" title="عرض">👁️</button>
+                          <button onClick={() => router.push(`/drugs/${drug._id}/edit`)} className="w-11 h-11 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-600 flex items-center justify-center text-base" title="تعديل">✏️</button>
+                          <button onClick={() => handleDelete(drug._id, drug.name)} className="w-11 h-11 rounded-lg bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center text-base" title="حذف">🗑️</button>
+                        </div>
+                      </td>
                     </tr>
                   ))
                 ) : (
@@ -334,7 +344,6 @@ export default function DrugsPage() {
               </tbody>
             </table>
           </div>
-          {/* Pagination Desktop (kısaltıldı) */}
         </div>
       </div>
 
